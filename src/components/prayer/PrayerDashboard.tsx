@@ -7,6 +7,7 @@ import { Lattice } from "@/components/ornament/Lattice";
 import { Wordmark } from "@/components/ornament/Wordmark";
 import { CountdownRing } from "./CountdownRing";
 import { LocationBar } from "./LocationBar";
+import { PrayerAlarm } from "./PrayerAlarm";
 import { PrayerTimeline } from "./PrayerTimeline";
 import { QiblaCompass } from "./QiblaCompass";
 import { useNow } from "@/lib/hooks";
@@ -64,8 +65,18 @@ export function PrayerDashboard() {
   const progress = windowProgress(schedule.previousTime, schedule.next.time, now);
   const remainingMs = schedule.next.time.getTime() - now.getTime();
 
+  const alarmOn = settings.alarm.prayers[schedule.next.key] ?? false;
+
   return (
     <div className="relative">
+      <PrayerAlarm
+        nextKey={schedule.next.key}
+        nextTime={schedule.next.time}
+        now={now}
+        enabled={alarmOn}
+        playSound={settings.alarm.playAdhan}
+      />
+
       <Lattice className="text-gold" scale={104} opacity={0.05} />
 
       <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
