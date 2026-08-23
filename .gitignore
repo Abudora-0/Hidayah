@@ -43,3 +43,9 @@ next-env.d.ts
 # Local environment
 .env.local
 .env*.local
+
+.vercel
+.env*
+
+# The template carries no secrets and contributors need it.
+!.env.example
