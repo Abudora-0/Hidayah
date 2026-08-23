@@ -13,9 +13,16 @@ function parseSurahNumber(value: string) {
   return number;
 }
 
-export async function generateStaticParams() {
-  return Array.from({ length: 114 }, (_, i) => ({ surah: String(i + 1) }));
-}
+/**
+ * Surah pages render on first request and are then cached for a year, which
+ * is safe because the text does not change.
+ *
+ * They are deliberately not prerendered at build time. Doing so fires 114
+ * parallel requests at a free API, which rate limits and fails the build. On
+ * demand rendering spreads those requests over real traffic, and each surah is
+ * only ever fetched once.
+ */
+export const revalidate = 31536000;
 
 export async function generateMetadata({
   params,

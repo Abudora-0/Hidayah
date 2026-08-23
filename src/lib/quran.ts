@@ -101,11 +101,28 @@ type CloudSurah = {
   ayahs: CloudAyah[];
 };
 
-async function getJson<T>(url: string): Promise<T> {
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
+
+/**
+ * Fetches and unwraps the API envelope, retrying briefly on rate limiting.
+ *
+ * The upstream API is free and does throttle under load, so a transient 429
+ * should not surface as a broken page. Backoff is short and bounded, since a
+ * reader is waiting.
+ */
+async function getJson<T>(url: string, attempt = 0): Promise<T> {
   const res = await fetch(url, FOREVER);
+
   if (!res.ok) {
+    if (RETRY_STATUSES.has(res.status) && attempt < 3) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, 400 * 2 ** attempt),
+      );
+      return getJson<T>(url, attempt + 1);
+    }
     throw new Error(`Request failed with ${res.status}: ${url}`);
   }
+
   const body = (await res.json()) as { code: number; data: T };
   return body.data;
 }
