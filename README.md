@@ -93,9 +93,14 @@ work from the browser alone.
 | `VAPID_SUBJECT` | Web Push | A `mailto:` address that push services can contact. |
 | `UPSTASH_REDIS_REST_URL` | Storing subscriptions | From [Upstash](https://console.upstash.com). |
 | `UPSTASH_REDIS_REST_TOKEN` | Storing subscriptions | From the same Upstash database. |
+| `QSTASH_URL` | Scheduling notifications | The endpoint for your QStash region. Needed if you chose the US region, since the client defaults to the EU endpoint. |
 | `QSTASH_TOKEN` | Scheduling notifications | From the QStash tab in the Upstash console. |
 | `QSTASH_CURRENT_SIGNING_KEY` | Verifying callbacks | Required, or the delivery route rejects everything. |
 | `QSTASH_NEXT_SIGNING_KEY` | Verifying callbacks | Used during Upstash key rotation. |
+
+> **Pick one QStash region and take all four values from it.** The token and the
+> signing keys differ per region, and mixing them makes every callback fail
+> signature verification, which is silent from the sending side.
 | `NEXT_PUBLIC_SITE_URL` | Scheduling notifications | The public origin, used to build the callback URL. |
 | `CRON_SECRET` | Guarding the cron route | Vercel sends this automatically on scheduled runs. |
 
