@@ -1,0 +1,545 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Hidayah design tokens
+
+   Three themes, each with a real dark and light variant, so six token sets.
+   Nothing here is a washed out copy of anything else. Themes are selected by
+   the data-theme and data-mode attributes on the html element, written before
+   first paint by the inline script in the root layout.
+   ========================================================================== */
+
+:root,
+[data-theme="emerald"][data-mode="dark"] {
+  --s0: #051a15;
+  --s1: #06231c;
+  --s2: #0b3227;
+  --line: #17513f;
+  --line-strong: #1f6b53;
+  --ink: #eaf3ee;
+  --ink-dim: #8fb6a5;
+  --ink-faint: #5e8b78;
+  --gold: #d4af37;
+  --gold-soft: #e9d08a;
+  --gold-ink: #e9d08a;
+}
+
+[data-theme="emerald"][data-mode="light"] {
+  --s0: #f2ede0;
+  --s1: #fffdf6;
+  --s2: #e8e1cf;
+  --line: #d3c9ac;
+  --line-strong: #b3a684;
+  --ink: #102c21;
+  --ink-dim: #43655a;
+  --ink-faint: #6f8c80;
+  --gold: #a8862a;
+  --gold-soft: #c9a227;
+  --gold-ink: #705716;
+}
+
+[data-theme="lapis"][data-mode="dark"] {
+  --s0: #08131f;
+  --s1: #0b1a2f;
+  --s2: #14293f;
+  --line: #24425f;
+  --line-strong: #35608a;
+  --ink: #f2e8d5;
+  --ink-dim: #93a7be;
+  --ink-faint: #64809c;
+  --gold: #c9a227;
+  --gold-soft: #e8ce85;
+  --gold-ink: #e8ce85;
+}
+
+[data-theme="lapis"][data-mode="light"] {
+  --s0: #f1eade;
+  --s1: #fffbf2;
+  --s2: #e6dcc7;
+  --line: #cdc0a2;
+  --line-strong: #ad9e7d;
+  --ink: #12253a;
+  --ink-dim: #465a70;
+  --ink-faint: #74879b;
+  --gold: #a8862a;
+  --gold-soft: #c9a227;
+  --gold-ink: #6d5514;
+}
+
+[data-theme="ink"][data-mode="dark"] {
+  --s0: #0b0b0b;
+  --s1: #121212;
+  --s2: #1c1b19;
+  --line: #35322c;
+  --line-strong: #4e4940;
+  --ink: #f0ebe3;
+  --ink-dim: #9a948a;
+  --ink-faint: #6e6960;
+  --gold: #b08d57;
+  --gold-soft: #d8ba86;
+  --gold-ink: #d8ba86;
+}
+
+[data-theme="ink"][data-mode="light"] {
+  --s0: #f5f2ec;
+  --s1: #ffffff;
+  --s2: #ece7dd;
+  --line: #d6cec0;
+  --line-strong: #b3a999;
+  --ink: #17150f;
+  --ink-dim: #524d45;
+  --ink-faint: #7d766b;
+  --gold: #8a6a38;
+  --gold-soft: #b08d57;
+  --gold-ink: #6a5028;
+}
+
+/* Icon shapes used as masks by the themed controls. They are masks rather than
+   background images so they inherit the active theme colour instead of baking
+   a fixed one into the data URI. */
+:root {
+  --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 13 4 4L19 7' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --icon-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 6 6 18M6 6l12 12' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  --icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* Map the live custom properties onto Tailwind utilities. Using @theme inline
+   means the utilities read the variable at use time, so switching theme is a
+   single attribute change with no rebuild and no duplicated class names. */
+@theme inline {
+  --color-surface-0: var(--s0);
+  --color-surface-1: var(--s1);
+  --color-surface-2: var(--s2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-ink: var(--gold-ink);
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-kufi: var(--font-display), Georgia, serif;
+  --font-quran: var(--font-uthmani), Georgia, serif;
+  --font-urdu: var(--font-nastaliq), serif;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+[data-mode="light"] {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--s0);
+  color: var(--ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* No transition on the token driven colours here. Chrome does not reliably
+   invalidate a transitioned property when the custom property feeding it
+   changes, which left the background painted in the previous theme. Theme
+   changes are applied instantly instead, with transitions suppressed for a
+   frame by applyThemeChoice in src/lib/theme.ts. */
+
+::selection {
+  background-color: var(--gold);
+  color: var(--s0);
+}
+
+/* ==========================================================================
+   Themed scrollbar
+   ========================================================================== */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--s2) 70%, transparent);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--gold-soft) 0%,
+    var(--gold) 45%,
+    var(--gold-soft) 100%
+  );
+  border-radius: 999px;
+  border: 3px solid var(--s0);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-soft);
+  background-clip: padding-box;
+  border: 2px solid var(--s0);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ==========================================================================
+   Focus, the same treatment everywhere
+   ========================================================================== */
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   Form controls, all themed, no browser defaults left showing
+   ========================================================================== */
+
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="email"],
+textarea {
+  appearance: none;
+  background-color: var(--s2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  padding: 0.6rem 0.9rem;
+  width: 100%;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease,
+    background-color 0.25s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-faint);
+}
+
+input[type="text"]:hover,
+input[type="search"]:hover,
+input[type="number"]:hover,
+textarea:hover {
+  border-color: var(--line-strong);
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent);
+  background-color: var(--s1);
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  cursor: pointer;
+  background-color: var(--ink-faint);
+  -webkit-mask-image: var(--icon-close);
+  mask-image: var(--icon-close);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+input[type="search"]::-webkit-search-cancel-button:hover {
+  background-color: var(--gold);
+}
+
+/* Number inputs lose their spinners, the themed counter replaces them */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* Range slider, used for audio position and reading font size */
+input[type="range"] {
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--gold) 0%,
+    var(--gold) var(--range-progress, 0%),
+    var(--line) var(--range-progress, 0%),
+    var(--line) 100%
+  );
+}
+
+input[type="range"]::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+input[type="range"]::-moz-range-progress {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--gold);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  height: 15px;
+  width: 15px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  border: 2px solid var(--s0);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 15px;
+  width: 15px;
+  border: 2px solid var(--s0);
+  border-radius: 50%;
+  background: var(--gold-soft);
+}
+
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold) 25%, transparent);
+}
+
+/* Checkbox and radio */
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+  background-color: var(--s2);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+input[type="checkbox"] {
+  border-radius: 5px;
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="checkbox"]:hover,
+input[type="radio"]:hover {
+  border-color: var(--gold);
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--gold);
+  border-color: var(--gold);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+  background-color: var(--s0);
+  -webkit-mask-image: var(--icon-check);
+  mask-image: var(--icon-check);
+  -webkit-mask-size: 80%;
+  mask-size: 80%;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+input[type="radio"]:checked {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 3px var(--s2), inset 0 0 0 12px var(--gold);
+}
+
+/* Native select is only a fallback, the themed listbox is the real control */
+select {
+  appearance: none;
+  background-color: var(--s2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  padding: 0.55rem 2.2rem 0.55rem 0.9rem;
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: var(--gold);
+}
+
+/* ==========================================================================
+   Typography for scripture
+   ========================================================================== */
+
+.font-quran {
+  font-family: var(--font-uthmani), Georgia, serif;
+  line-height: 2.15;
+}
+
+.font-urdu {
+  font-family: var(--font-nastaliq), serif;
+  line-height: 2.7;
+}
+
+.font-kufi {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* ==========================================================================
+   Motion
+   ========================================================================== */
+
+@keyframes hd-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hd-draw {
+  from {
+    stroke-dashoffset: var(--draw-length, 400);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hd-shimmer {
+  0% {
+    background-position: -220% 0;
+  }
+  100% {
+    background-position: 220% 0;
+  }
+}
+
+@keyframes hd-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes hd-spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hd-fade-up {
+  animation: hd-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hd-draw {
+  stroke-dasharray: var(--draw-length, 400);
+  animation: hd-draw 2.1s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.hd-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--gold-soft) 75%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: hd-shimmer 3.6s ease-in-out infinite;
+}
+
+.hd-breathe {
+  animation: hd-breathe 3.4s ease-in-out infinite;
+}
+
+.hd-spin-slow {
+  animation: hd-spin-slow 34s linear infinite;
+}
+
+/* A gold rule used to divide sections */
+.hd-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--line-strong) 18%,
+    var(--gold) 50%,
+    var(--line-strong) 82%,
+    transparent
+  );
+}
+
+.hd-card {
+  background-color: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.hd-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
+}
+
+/* Respect the user. Every animation above collapses to nothing. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
