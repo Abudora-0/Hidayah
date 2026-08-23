@@ -89,3 +89,79 @@ export function toHijriObservingSunset(date: Date, maghrib?: Date): HijriDate {
   }
   return toHijri(date);
 }
+
+/* ==========================================================================
+   Hijri to Gregorian
+
+   Intl converts one way only, so the reverse is done by searching. The Umm al
+   Qura month lengths are irregular, which rules out arithmetic conversion, but
+   toHijri is cheap and monotonic so a short search lands exactly.
+   ========================================================================== */
+
+const MEAN_MONTH = 29.530588;
+const MEAN_YEAR = 354.367;
+
+/** A single ordinal for a Hijri month, so two of them can be compared. */
+function monthIndex(date: HijriDate) {
+  return date.year * 12 + (date.month - 1);
+}
+
+/**
+ * The Gregorian date on which a given Hijri month begins.
+ * Returns null if the search fails, which should only happen far outside the
+ * range the Umm al Qura calendar covers.
+ */
+export function hijriMonthStart(year: number, month: number): Date | null {
+  const target = year * 12 + (month - 1);
+
+  // Rough starting point from the mean year and month lengths.
+  const estimate = new Date(
+    Date.UTC(622, 6, 19) +
+      ((year - 1) * MEAN_YEAR + (month - 1) * MEAN_MONTH) * 86400000,
+  );
+
+  let cursor = new Date(
+    estimate.getUTCFullYear(),
+    estimate.getUTCMonth(),
+    estimate.getUTCDate(),
+  );
+
+  // Jump whole months until we land inside the right one.
+  for (let i = 0; i < 60; i++) {
+    const delta = target - monthIndex(toHijri(cursor));
+    if (delta === 0) break;
+    cursor = addDays(cursor, Math.trunc(delta * MEAN_MONTH) || Math.sign(delta));
+  }
+
+  if (monthIndex(toHijri(cursor)) !== target) return null;
+
+  // Step back to the first of that month.
+  cursor = addDays(cursor, 1 - toHijri(cursor).day);
+
+  // The step above assumes the days are contiguous. Verify, and nudge if the
+  // boundary landed a day out.
+  for (let i = 0; i < 3; i++) {
+    const here = toHijri(cursor);
+    if (here.day === 1 && here.month === month && here.year === year) {
+      return startOfDay(cursor);
+    }
+    cursor = addDays(cursor, monthIndex(here) < target || here.day > 1 ? 1 : -1);
+  }
+
+  return null;
+}
+
+/** Number of days in a Hijri month, which varies between 29 and 30. */
+export function hijriMonthLength(year: number, month: number): number {
+  const start = hijriMonthStart(year, month);
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  const next = hijriMonthStart(nextYear, nextMonth);
+  if (!start || !next) return 30;
+  return Math.round((next.getTime() - start.getTime()) / 86400000);
+}
+
+export function addHijriMonths(year: number, month: number, delta: number) {
+  const total = year * 12 + (month - 1) + delta;
+  return { year: Math.floor(total / 12), month: (total % 12) + 1 };
+}
