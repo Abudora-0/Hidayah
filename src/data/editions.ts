@@ -150,10 +150,6 @@ export const TAFSIRS: Tafsir[] = [
   },
 ];
 
-export function findEdition(list: Edition[], id: string) {
-  return list.find((edition) => edition.id === id) ?? list[0];
-}
-
 export function findReciter(id: string) {
   return RECITERS.find((reciter) => reciter.id === id) ?? RECITERS[0];
 }

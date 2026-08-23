@@ -1,8 +1,6 @@
 import { ARABIC_EDITION } from "@/data/editions";
 
 const API = "https://api.alquran.cloud/v1";
-const TAFSIR_CDN =
-  "https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir";
 
 /**
  * The text of the Quran does not change, so responses are cached for a year.
@@ -192,32 +190,6 @@ export async function fetchSurah(
   };
 }
 
-export type TafsirEntry = { ayah: number; text: string };
-
-type TafsirResponse = {
-  ayahs?: { ayah: number; text: string }[];
-} | { text: string }[];
-
-/** Tafsir for a whole surah, keyed by ayah number. */
-export async function fetchTafsir(
-  editionId: string,
-  surah: number,
-): Promise<Map<number, string>> {
-  const res = await fetch(`${TAFSIR_CDN}/${editionId}/${surah}.json`, FOREVER);
-  if (!res.ok) return new Map();
-
-  const body = (await res.json()) as TafsirResponse;
-  const map = new Map<number, string>();
-
-  if (Array.isArray(body)) {
-    body.forEach((entry, index) => map.set(index + 1, entry.text));
-  } else if (body.ayahs) {
-    for (const entry of body.ayahs) map.set(entry.ayah, entry.text);
-  }
-
-  return map;
-}
-
 /**
  * Per ayah recitation. The global ayah number maps directly onto the file
  * name, so no extra request is needed to discover the audio URL.
@@ -225,6 +197,3 @@ export async function fetchTafsir(
 export function ayahAudioUrl(reciterId: string, globalNumber: number) {
   return `https://cdn.islamic.network/quran/audio/128/${reciterId}/${globalNumber}.mp3`;
 }
-
-export const JUZ_COUNT = 30;
-export const TOTAL_AYAHS = 6236;

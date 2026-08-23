@@ -162,15 +162,6 @@ export const OCCASIONS: Occasion[] = [
   },
 ];
 
-/** The white days, the thirteenth to fifteenth of every Hijri month. */
-export const WHITE_DAYS = {
-  id: "ayyam-al-beed",
-  name: "The white days",
-  arabicName: "أيام البيض",
-  kind: "fast" as OccasionKind,
-  note: "The thirteenth, fourteenth and fifteenth of every month, kept as a fast.",
-};
-
 export const OCCASION_STYLES: Record<
   OccasionKind,
   { label: string; dot: string }
@@ -193,9 +184,4 @@ export function occasionsOn(date: HijriDate): Occasion[] {
 
 export function isWhiteDay(date: HijriDate) {
   return date.day >= 13 && date.day <= 15;
-}
-
-/** True when the day carries something worth marking on the grid. */
-export function hasMarking(date: HijriDate) {
-  return occasionsOn(date).length > 0;
 }

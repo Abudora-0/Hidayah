@@ -61,11 +61,6 @@ export function formatHijriArabic(date: HijriDate) {
   return `${date.day} ${month.ar} ${date.year}`;
 }
 
-/** True when both dates land on the same Hijri day. */
-export function isSameHijriDay(a: HijriDate, b: HijriDate) {
-  return a.day === b.day && a.month === b.month && a.year === b.year;
-}
-
 export function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
