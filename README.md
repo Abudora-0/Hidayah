@@ -102,7 +102,7 @@ work from the browser alone.
 > signing keys differ per region, and mixing them makes every callback fail
 > signature verification, which is silent from the sending side.
 | `NEXT_PUBLIC_SITE_URL` | Scheduling notifications | The public origin, used to build the callback URL. |
-| `CRON_SECRET` | Guarding the cron route | Vercel sends this automatically on scheduled runs. |
+| `CRON_SECRET` | Guarding the cron route | You must create this. Vercel does not generate it, it only forwards it once it exists. Without it, `/api/cron/schedule` is publicly callable. |
 
 Generate a VAPID key pair with:
 

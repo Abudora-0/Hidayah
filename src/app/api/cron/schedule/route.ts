@@ -135,6 +135,10 @@ export async function GET(request: Request) {
     scheduled,
     skipped,
     failures,
+    // Echoed so the address QStash will call back can be confirmed without
+    // waiting for a prayer to pass. A stale value here, after a rename or a
+    // domain change, makes every notification fail with nothing to see.
+    callback,
     ranAt: now.toISOString(),
   });
 }
