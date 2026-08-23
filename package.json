@@ -8,8 +8,10 @@
     "start": "next start",
     "lint": "eslint && node scripts/check-no-emdash.mjs",
     "typecheck": "next typegen && tsc --noEmit",
-    "check": "npm run lint && npm run typecheck",
-    "generate-vapid": "node scripts/generate-vapid.mjs"
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "generate-vapid": "node scripts/generate-vapid.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@upstash/qstash": "^2.11.3",
@@ -30,7 +32,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   },
   "description": "Prayer times, the Hijri calendar and the full Quran with translation, tafsir and recitation.",
   "license": "MIT"

@@ -3,6 +3,7 @@ import {
   Coordinates,
   HighLatitudeRule,
   Madhab,
+  PolarCircleResolution,
   PrayerTimes,
   Qibla,
   SunnahTimes,
@@ -131,12 +132,23 @@ export const DEFAULT_PRAYER_SETTINGS: PrayerSettings = {
   madhab: "hanafi",
 };
 
-function buildParameters(settings: PrayerSettings): CalculationParameters {
+function buildParameters(
+  settings: PrayerSettings,
+  coordinates: Coordinates,
+): CalculationParameters {
   const params = CalculationMethod[settings.method]();
   params.madhab = settings.madhab === "hanafi" ? Madhab.Hanafi : Madhab.Shafi;
-  // Keeps Fajr and Isha solvable in northern latitudes where the sun never
-  // reaches the required depression angle in summer.
-  params.highLatitudeRule = HighLatitudeRule.MiddleOfTheNight;
+
+  // At northern latitudes the sun may never dip far enough below the horizon
+  // for Fajr and Isha to have a real solution. The recommended rule picks the
+  // right approximation for the given coordinates.
+  params.highLatitudeRule = HighLatitudeRule.recommended(coordinates);
+
+  // Inside the polar circle the sun may not rise or set at all, and the
+  // default resolution returns NaN for every time. AqrabBalad substitutes the
+  // nearest latitude where the day still resolves, which is what almanacs for
+  // those regions do.
+  params.polarCircleResolution = PolarCircleResolution.AqrabBalad;
 
   if (settings.adjustments) {
     params.adjustments = {
@@ -172,11 +184,8 @@ function timesFor(
   date: Date,
   settings: PrayerSettings,
 ) {
-  return new PrayerTimes(
-    new Coordinates(latitude, longitude),
-    date,
-    buildParameters(settings),
-  );
+  const coordinates = new Coordinates(latitude, longitude);
+  return new PrayerTimes(coordinates, date, buildParameters(settings, coordinates));
 }
 
 function addDays(date: Date, days: number) {
