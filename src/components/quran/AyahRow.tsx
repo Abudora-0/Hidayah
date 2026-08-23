@@ -96,7 +96,7 @@ function AyahRowInner({
             dir="rtl"
             lang="ar"
             className={`font-quran text-ink transition-colors duration-500 ${
-              isPlaying ? "text-gold-soft" : ""
+              isPlaying ? "text-gold-ink" : ""
             }`}
             style={{ fontSize: `${arabicSize}px` }}
           >

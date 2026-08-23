@@ -108,7 +108,7 @@ export function CountdownRing({
         <p
           dir="rtl"
           lang="ar"
-          className="font-quran mt-2 text-3xl text-gold-soft"
+          className="font-quran mt-2 text-3xl text-gold-ink"
         >
           {label.ar}
         </p>

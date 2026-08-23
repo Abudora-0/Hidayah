@@ -62,7 +62,7 @@ export function SurahIndex({ surahs }: { surahs: SurahSummary[] }) {
               aria-pressed={filter === option.key}
               className={`rounded-full px-4 py-1.5 text-xs transition-all duration-300 ${
                 filter === option.key
-                  ? "bg-gold text-surface-0"
+                  ? "bg-gold text-on-gold"
                   : "text-ink-dim hover:text-ink"
               }`}
             >
@@ -139,7 +139,7 @@ export function SurahIndex({ surahs }: { surahs: SurahSummary[] }) {
                 <span
                   dir="rtl"
                   lang="ar"
-                  className="font-quran shrink-0 text-lg text-gold-soft transition-transform duration-300 group-hover:scale-105"
+                  className="font-quran shrink-0 text-lg text-gold-ink transition-transform duration-300 group-hover:scale-105"
                 >
                   {surah.arabicName.replace(/^سُورَةُ\s*/, "")}
                 </span>

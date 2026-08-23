@@ -15,6 +15,7 @@ full Quran in Arabic, English and Urdu with tafsir and recitation.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Tests](https://img.shields.io/badge/tests-41%20passing-1F6B53?style=flat-square&logo=vitest&logoColor=white)](#testing)
+[![Contrast](https://img.shields.io/badge/WCAG%20AA-66%20checks-1F6B53?style=flat-square)](#contrast)
 [![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?style=flat-square&logo=pwa&logoColor=white)](#the-prayer-alarm)
 [![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/new)
 
@@ -264,7 +265,8 @@ scripts/
 | `npm run lint` | ESLint plus the em dash check |
 | `npm run typecheck` | Route type generation and `tsc --noEmit` |
 | `npm run test` | Vitest |
-| `npm run check` | Lint, typecheck and test together |
+| `npm run check:contrast` | Audit colour contrast across all six palettes |
+| `npm run check` | Lint, typecheck, test and contrast together |
 | `npm run generate-vapid` | Print a fresh VAPID key pair |
 
 `npm run lint` includes `scripts/check-no-emdash.mjs`, which fails the build if
@@ -295,6 +297,22 @@ npm run test
 
 One of these tests found a real bug: inside the polar circle `adhan` returns
 `NaN` for every prayer time unless `polarCircleResolution` is set.
+
+### Contrast
+
+```bash
+npm run check:contrast
+```
+
+Three themes with a dark and light variant each is six palettes, which is more
+than anyone can reliably eyeball. This checks every colour pairing the
+interface actually uses against the WCAG AA thresholds, 4.5 for text and 3.0
+for the boundaries of interactive controls, and fails if any pair falls short.
+
+It was worth writing. The failures it found on its first run were not the
+obvious ones: hint text sat between 3.1 and 4.5 against its background in
+every single theme, and the one theme whose gold is dark needed light text on
+gold fills while the other five needed dark. All 66 pairings pass now.
 
 ---
 

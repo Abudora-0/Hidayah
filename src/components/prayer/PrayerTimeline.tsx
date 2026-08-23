@@ -103,7 +103,7 @@ export function PrayerTimeline({
 
               <span
                 className={`font-kufi shrink-0 text-lg tabular-nums transition-colors duration-300 ${
-                  isNext ? "text-gold" : "text-ink-dim"
+                  isNext ? "text-gold-ink" : "text-ink-dim"
                 }`}
               >
                 {formatTime(entry.time, hour12)}

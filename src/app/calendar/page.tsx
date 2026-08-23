@@ -19,7 +19,7 @@ export default function CalendarPage() {
         <header className="flex flex-col items-center text-center">
           <GirihMark size={40} className="text-gold" animated />
           <h1 className="font-kufi mt-5 text-3xl text-ink">Islamic calendar</h1>
-          <p dir="rtl" lang="ar" className="font-quran mt-2 text-2xl text-gold-soft">
+          <p dir="rtl" lang="ar" className="font-quran mt-2 text-2xl text-gold-ink">
             التقويم الهجري
           </p>
         </header>

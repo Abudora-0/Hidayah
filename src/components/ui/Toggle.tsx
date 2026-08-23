@@ -61,7 +61,7 @@ export function Toggle({
             width="10"
             height="10"
             transform="rotate(45 12 12)"
-            stroke={checked ? "var(--s0)" : "var(--s1)"}
+            stroke={checked ? "var(--on-gold)" : "var(--s1)"}
             strokeWidth="2.5"
           />
         </svg>

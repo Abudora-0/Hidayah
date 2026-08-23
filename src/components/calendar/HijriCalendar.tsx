@@ -136,7 +136,7 @@ export function HijriCalendar() {
             {monthName.en} {view.year}
             <span className="ml-2 text-sm text-ink-faint">AH</span>
           </h2>
-          <p dir="rtl" lang="ar" className="font-quran mt-1 text-lg text-gold-soft">
+          <p dir="rtl" lang="ar" className="font-quran mt-1 text-lg text-gold-ink">
             {monthName.ar}
           </p>
           <p className="mt-1 text-xs text-ink-faint">{gregorianSpan()}</p>
@@ -215,7 +215,7 @@ export function HijriCalendar() {
               <span
                 className={`font-kufi text-sm tabular-nums ${
                   cell.isToday
-                    ? "text-gold"
+                    ? "text-gold-ink"
                     : cell.isFriday
                       ? "text-gold-ink"
                       : "text-ink"

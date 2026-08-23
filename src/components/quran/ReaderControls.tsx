@@ -57,7 +57,7 @@ export function ReaderControls({ settings }: { settings: Settings }) {
             <span
               dir="rtl"
               lang="ar"
-              className="font-quran truncate text-gold-soft"
+              className="font-quran truncate text-gold-ink"
               style={{ fontSize: `${Math.min(settings.quran.arabicSize, 34)}px` }}
             >
               بِسْمِ ٱللَّهِ

@@ -15,7 +15,7 @@ export default function SettingsPage() {
       <header className="mb-10 flex flex-col items-center text-center">
         <GirihMark size={38} className="text-gold" animated />
         <h1 className="font-kufi mt-5 text-3xl text-ink">Settings</h1>
-        <p dir="rtl" lang="ar" className="font-quran mt-2 text-xl text-gold-soft">
+        <p dir="rtl" lang="ar" className="font-quran mt-2 text-xl text-gold-ink">
           الإعدادات
         </p>
       </header>

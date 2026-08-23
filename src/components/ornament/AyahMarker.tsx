@@ -60,7 +60,7 @@ export function AyahMarker({
       </svg>
       <span
         className={`relative font-kufi tabular-nums transition-colors duration-500 ${
-          active ? "text-gold" : "text-ink-dim"
+          active ? "text-gold-ink" : "text-ink-dim"
         }`}
         style={{ fontSize: size * 0.32 }}
       >

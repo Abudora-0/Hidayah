@@ -8,10 +8,11 @@
     "start": "next start",
     "lint": "eslint && node scripts/check-no-emdash.mjs",
     "typecheck": "next typegen && tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm run test",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run check:contrast",
     "generate-vapid": "node scripts/generate-vapid.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "@upstash/qstash": "^2.11.3",

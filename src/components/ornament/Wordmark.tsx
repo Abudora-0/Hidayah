@@ -30,14 +30,14 @@ export function Wordmark({
           <span
             dir="rtl"
             lang="ar"
-            className="font-kufi text-gold-soft leading-none"
+            className="font-kufi text-gold-ink leading-none"
             style={{ fontSize: size * 0.95 }}
           >
             هداية
           </span>
           <span className="hd-rule w-full min-w-24" aria-hidden="true" />
           <span
-            className="font-kufi text-gold uppercase leading-none"
+            className="font-kufi text-gold-ink uppercase leading-none"
             style={{ fontSize: size * 0.36, letterSpacing: "0.34em" }}
           >
             Hidayah
@@ -63,7 +63,7 @@ export function Wordmark({
         <span
           dir="rtl"
           lang="ar"
-          className="font-kufi text-gold mt-1"
+          className="font-kufi text-gold-ink mt-1"
           style={{ fontSize: size * 0.4 }}
         >
           هداية

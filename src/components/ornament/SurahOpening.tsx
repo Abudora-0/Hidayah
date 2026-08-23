@@ -40,7 +40,7 @@ export function SurahOpening({
         <h1
           dir="rtl"
           lang="ar"
-          className="font-quran mt-4 text-4xl text-gold-soft sm:text-5xl"
+          className="font-quran mt-4 text-4xl text-gold-ink sm:text-5xl"
         >
           {arabicName}
         </h1>

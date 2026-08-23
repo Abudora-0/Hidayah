@@ -25,7 +25,7 @@ export default async function QuranPage() {
           <p
             dir="rtl"
             lang="ar"
-            className="font-quran mt-2 text-2xl text-gold-soft"
+            className="font-quran mt-2 text-2xl text-gold-ink"
           >
             القرآن الكريم
           </p>

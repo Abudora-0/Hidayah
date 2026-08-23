@@ -15,13 +15,14 @@
   --s1: #06231c;
   --s2: #0b3227;
   --line: #17513f;
-  --line-strong: #1f6b53;
+  --line-strong: #2d7961;
   --ink: #eaf3ee;
   --ink-dim: #8fb6a5;
-  --ink-faint: #5e8b78;
+  --ink-faint: #64917e;
   --gold: #d4af37;
   --gold-soft: #e9d08a;
   --gold-ink: #e9d08a;
+  --on-gold: #051a15;
 }
 
 [data-theme="emerald"][data-mode="light"] {
@@ -29,13 +30,14 @@
   --s1: #fffdf6;
   --s2: #e8e1cf;
   --line: #d3c9ac;
-  --line-strong: #b3a684;
+  --line-strong: #9b8e6c;
   --ink: #102c21;
   --ink-dim: #43655a;
-  --ink-faint: #6f8c80;
+  --ink-faint: #4f6c60;
   --gold: #a8862a;
   --gold-soft: #c9a227;
   --gold-ink: #705716;
+  --on-gold: #0e2019;
 }
 
 [data-theme="lapis"][data-mode="dark"] {
@@ -43,13 +45,14 @@
   --s1: #0b1a2f;
   --s2: #14293f;
   --line: #24425f;
-  --line-strong: #35608a;
+  --line-strong: #416c96;
   --ink: #f2e8d5;
   --ink-dim: #93a7be;
-  --ink-faint: #64809c;
+  --ink-faint: #6c88a4;
   --gold: #c9a227;
   --gold-soft: #e8ce85;
   --gold-ink: #e8ce85;
+  --on-gold: #08131f;
 }
 
 [data-theme="lapis"][data-mode="light"] {
@@ -57,13 +60,14 @@
   --s1: #fffbf2;
   --s2: #e6dcc7;
   --line: #cdc0a2;
-  --line-strong: #ad9e7d;
+  --line-strong: #9b8c6b;
   --ink: #12253a;
   --ink-dim: #465a70;
-  --ink-faint: #74879b;
+  --ink-faint: #54677b;
   --gold: #a8862a;
   --gold-soft: #c9a227;
   --gold-ink: #6d5514;
+  --on-gold: #0a1626;
 }
 
 [data-theme="ink"][data-mode="dark"] {
@@ -71,13 +75,14 @@
   --s1: #121212;
   --s2: #1c1b19;
   --line: #35322c;
-  --line-strong: #4e4940;
+  --line-strong: #6a655c;
   --ink: #f0ebe3;
   --ink-dim: #9a948a;
-  --ink-faint: #6e6960;
+  --ink-faint: #847f76;
   --gold: #b08d57;
   --gold-soft: #d8ba86;
   --gold-ink: #d8ba86;
+  --on-gold: #0b0b0b;
 }
 
 [data-theme="ink"][data-mode="light"] {
@@ -85,13 +90,14 @@
   --s1: #ffffff;
   --s2: #ece7dd;
   --line: #d6cec0;
-  --line-strong: #b3a999;
+  --line-strong: #998f7f;
   --ink: #17150f;
   --ink-dim: #524d45;
-  --ink-faint: #7d766b;
+  --ink-faint: #6f685d;
   --gold: #8a6a38;
   --gold-soft: #b08d57;
   --gold-ink: #6a5028;
+  --on-gold: #faf8f4;
 }
 
 /* Icon shapes used as masks by the themed controls. They are masks rather than
@@ -118,6 +124,7 @@
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
   --color-gold-ink: var(--gold-ink);
+  --color-on-gold: var(--on-gold);
 
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-kufi: var(--font-display), Georgia, serif;
@@ -158,7 +165,7 @@ body {
 
 ::selection {
   background-color: var(--gold);
-  color: var(--s0);
+  color: var(--on-gold);
 }
 
 /* ==========================================================================
@@ -378,7 +385,7 @@ input[type="checkbox"]:checked::after {
   display: block;
   height: 100%;
   width: 100%;
-  background-color: var(--s0);
+  background-color: var(--on-gold);
   -webkit-mask-image: var(--icon-check);
   mask-image: var(--icon-check);
   -webkit-mask-size: 80%;
