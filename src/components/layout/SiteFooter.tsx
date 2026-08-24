@@ -1,55 +1,96 @@
 import Link from "next/link";
 
-import { GirihRule } from "@/components/ornament/GirihRule";
 import { Wordmark } from "@/components/ornament/Wordmark";
 
+const BROWSE = [
+  { label: "Prayer times", href: "/" },
+  { label: "Quran", href: "/quran" },
+  { label: "Search", href: "/quran/search" },
+  { label: "Calendar", href: "/calendar" },
+  { label: "Tasbih", href: "/tasbih" },
+  { label: "Settings", href: "/settings" },
+];
+
 const SOURCES = [
-  { label: "Prayer times", href: "https://aladhan.com" },
-  { label: "Quran text", href: "https://alquran.cloud" },
-  { label: "Tafsir", href: "https://quran.com" },
-  { label: "Recitation", href: "https://islamic.network" },
+  { label: "Aladhan", note: "Prayer times", href: "https://aladhan.com" },
+  { label: "Al Quran Cloud", note: "Quran text", href: "https://alquran.cloud" },
+  { label: "Quran.com", note: "Tafsir", href: "https://quran.com" },
+  { label: "Islamic Network", note: "Recitation", href: "https://islamic.network" },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-line bg-surface-1">
-      <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
-        <GirihRule className="mb-10" />
-
-        <div className="flex flex-col items-center gap-8 text-center">
-          <Wordmark layout="stacked" size={22} animated={false} />
-
-          <p className="max-w-md text-sm leading-relaxed text-ink-dim">
-            Prayer times are calculated locally on your device. Occasion dates
-            follow the Umm al Qura calendar and may differ from your local moon
-            sighting by a day.
-          </p>
-
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            {SOURCES.map((source) => (
-              <li key={source.href}>
-                <a
-                  href={source.href}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="text-xs text-ink-faint underline-offset-4 transition-colors duration-300 hover:text-gold-ink hover:underline"
-                >
-                  {source.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-ink-faint">
-            <Link
-              href="/settings"
-              className="transition-colors duration-300 hover:text-gold-ink"
-            >
-              Settings
-            </Link>
-            <span aria-hidden="true">&middot;</span>
-            <span>Released under the MIT licence</span>
+    <footer className="mt-16 border-t border-line bg-surface-1">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+        {/* Three columns rather than one centred stack. The stack left most of
+            the width empty and pushed the footer far taller than its content
+            warranted. */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-[1.6fr_1fr_1fr] lg:gap-10">
+          <div className="col-span-2 lg:col-span-1">
+            <Wordmark size={17} animated={false} />
+            <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-faint">
+              Prayer times are calculated on your device, so they work offline.
+              Occasion dates follow the Umm al Qura calendar, which is
+              calculated rather than sighted, and may fall a day either side of
+              your local announcement.
+            </p>
           </div>
+
+          <nav aria-label="Footer">
+            <h2 className="text-[0.6rem] uppercase tracking-[0.26em] text-ink-faint">
+              Browse
+            </h2>
+            <ul className="mt-3.5 flex flex-col gap-2">
+              {BROWSE.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-ink-dim transition-colors duration-300 hover:text-gold-ink"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div>
+            <h2 className="text-[0.6rem] uppercase tracking-[0.26em] text-ink-faint">
+              Built on
+            </h2>
+            <ul className="mt-3.5 flex flex-col gap-2">
+              {SOURCES.map((source) => (
+                <li key={source.href}>
+                  <a
+                    href={source.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="group flex items-baseline gap-2 text-sm text-ink-dim transition-colors duration-300 hover:text-gold-ink"
+                  >
+                    {source.label}
+                    <span className="text-[0.66rem] text-ink-faint">
+                      {source.note}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="hd-rule mt-8" />
+
+        <div className="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row">
+          <p className="text-xs text-ink-faint">
+            Released under the MIT licence
+          </p>
+          <p
+            dir="rtl"
+            lang="ar"
+            className="font-quran text-sm text-ink-faint"
+          >
+            رَبِّ زِدْنِي عِلْمًا
+          </p>
         </div>
       </div>
     </footer>
