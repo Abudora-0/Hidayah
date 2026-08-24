@@ -10,6 +10,7 @@ import { AyahRow } from "./AyahRow";
 import { AyahSheet } from "./AyahSheet";
 import { MushafView } from "./MushafView";
 import { ReaderControls } from "./ReaderControls";
+import { ReaderPager } from "./ReaderPager";
 import { TafsirPanel } from "./TafsirPanel";
 import { updateSettings, useSettings } from "@/lib/settings";
 import {
@@ -18,6 +19,7 @@ import {
   toggleBookmark,
   useReading,
 } from "@/lib/reading";
+import { PAGE_SIZE, useAyahPagination } from "@/lib/pagination";
 import { ayahAudioUrl, type Ayah, type Surah } from "@/lib/quran";
 
 type SurahReaderProps = {
@@ -124,6 +126,16 @@ export function SurahReader({
     });
   }, [surah.ayahs, extra]);
 
+  // Ayahs are numbered from one within a surah, so the anchor maps straight
+  // onto an index.
+  const findIndexForAnchor = useCallback(
+    (ayahNumber: number) => ayahNumber - 1,
+    [],
+  );
+
+  const pageSize = mushaf ? PAGE_SIZE.mushaf : PAGE_SIZE.study;
+  const paged = useAyahPagination(ayahs, pageSize, findIndexForAnchor);
+
   const playAyah = useCallback(
     (numberInSurah: number) => {
       setActiveAyah(numberInSurah);
@@ -141,16 +153,23 @@ export function SurahReader({
     ? ayahAudioUrl(settings.quran.reciter, currentAyah.globalNumber)
     : undefined;
 
-  // Load and play whenever the ayah or the reciter changes.
+  // Whether playback should continue into the next track, read without making
+  // the loader depend on it.
+  const playingRef = useRef(playing);
+  useEffect(() => {
+    playingRef.current = playing;
+  }, [playing]);
+
+  // Load only when the track itself changes. This used to depend on `playing`
+  // too, which meant pausing and resuming reassigned the source and called
+  // load(), restarting the ayah from the beginning instead of resuming it.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !src) return;
     audio.src = src;
     audio.load();
-    if (playing) {
-      audio.play().catch(() => setPlaying(false));
-    }
-  }, [src, playing]);
+    if (playingRef.current) audio.play().catch(() => setPlaying(false));
+  }, [src]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -164,7 +183,7 @@ export function SurahReader({
     if (!activeAyah || !playing) return;
     const node = document.getElementById(`ayah-${activeAyah}`);
     node?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeAyah, playing]);
+  }, [activeAyah, playing, paged.page]);
 
   function onEnded() {
     if (repeat) {
@@ -175,9 +194,12 @@ export function SurahReader({
       }
       return;
     }
-    // Continuous recitation through to the end of the surah.
+    // Continuous recitation through to the end of the surah. The page has to
+    // follow, or the next ayah is not on screen to highlight or scroll to.
     if (activeAyah !== null && activeAyah < surah.ayahCount) {
-      setActiveAyah(activeAyah + 1);
+      const next = activeAyah + 1;
+      setActiveAyah(next);
+      paged.goToIndex(next - 1);
     } else {
       setPlaying(false);
     }
@@ -268,9 +290,17 @@ export function SurahReader({
 
         <GirihRule className="my-10" />
 
+        <ReaderPager
+          page={paged.page}
+          pageCount={paged.pageCount}
+          onPage={paged.setPage}
+          rangeLabel={`Ayahs ${paged.offset + 1} to ${Math.min(paged.offset + pageSize, surah.ayahCount)} of ${surah.ayahCount}`}
+        />
+
+        <div className="mt-8">
         {mushaf ? (
           <MushafView
-            ayahs={ayahs}
+            ayahs={paged.items}
             arabicSize={settings.quran.arabicSize}
             activeAyah={
               activeAyah
@@ -282,7 +312,7 @@ export function SurahReader({
           />
         ) : (
         <div className="flex flex-col gap-2">
-          {ayahs.map((ayah) => (
+          {paged.items.map((ayah) => (
             <AyahRow
               key={ayah.numberInSurah}
               ayah={ayah}
@@ -302,6 +332,16 @@ export function SurahReader({
           ))}
         </div>
         )}
+        </div>
+
+        <GirihRule className="my-10" />
+
+        <ReaderPager
+          page={paged.page}
+          pageCount={paged.pageCount}
+          onPage={paged.setPage}
+          rangeLabel={`Ayahs ${paged.offset + 1} to ${Math.min(paged.offset + pageSize, surah.ayahCount)} of ${surah.ayahCount}`}
+        />
 
         <GirihRule className="my-10" />
 
@@ -371,10 +411,16 @@ export function SurahReader({
         duration={duration}
         repeat={repeat}
         onToggle={() => setPlaying((p) => !p)}
-        onPrevious={() => setActiveAyah((n) => Math.max(1, (n ?? 1) - 1))}
-        onNext={() =>
-          setActiveAyah((n) => Math.min(surah.ayahCount, (n ?? 1) + 1))
-        }
+        onPrevious={() => {
+          const next = Math.max(1, (activeAyah ?? 1) - 1);
+          setActiveAyah(next);
+          paged.goToIndex(next - 1);
+        }}
+        onNext={() => {
+          const next = Math.min(surah.ayahCount, (activeAyah ?? 1) + 1);
+          setActiveAyah(next);
+          paged.goToIndex(next - 1);
+        }}
         onSeek={seek}
         onReciter={(id) =>
           updateSettings((current) => ({

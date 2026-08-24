@@ -9,9 +9,11 @@ import { AyahRow } from "./AyahRow";
 import { AyahSheet } from "./AyahSheet";
 import { MushafView } from "./MushafView";
 import { ReaderControls } from "./ReaderControls";
+import { ReaderPager } from "./ReaderPager";
 import { TafsirPanel } from "./TafsirPanel";
 import { updateSettings, useSettings } from "@/lib/settings";
 import { isBookmarked, setLastRead, toggleBookmark, useReading } from "@/lib/reading";
+import { PAGE_SIZE, useAyahPagination } from "@/lib/pagination";
 import { ayahAudioUrl, type Juz, type JuzAyah } from "@/lib/quran";
 
 const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
@@ -47,6 +49,18 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
     settings.quran;
   const mushaf = readingMode === "mushaf";
 
+  // A juz restarts ayah numbering at every surah, so an anchor has to be
+  // matched against the ayah numbers actually present rather than assumed to
+  // be an offset.
+  const findIndexForAnchor = useCallback(
+    (ayahNumber: number) =>
+      juz.ayahs.findIndex((a) => a.numberInSurah === ayahNumber),
+    [juz.ayahs],
+  );
+
+  const pageSize = mushaf ? PAGE_SIZE.mushaf : PAGE_SIZE.study;
+  const paged = useAyahPagination(juz.ayahs, pageSize, findIndexForAnchor);
+
   const current = activeIndex !== null ? juz.ayahs[activeIndex] : null;
   const src = current
     ? ayahAudioUrl(settings.quran.reciter, current.globalNumber)
@@ -58,13 +72,20 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
     setPlaying(true);
   }, []);
 
+  const playingRef = useRef(playing);
+  useEffect(() => {
+    playingRef.current = playing;
+  }, [playing]);
+
+  // Load only when the track changes, or pausing and resuming would reassign
+  // the source and restart the ayah rather than continuing it.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !src) return;
     audio.src = src;
     audio.load();
-    if (playing) audio.play().catch(() => setPlaying(false));
-  }, [src, playing]);
+    if (playingRef.current) audio.play().catch(() => setPlaying(false));
+  }, [src]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -79,7 +100,7 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
     document
       .getElementById(`ayah-${ayah.numberInSurah}`)
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeIndex, playing, juz.ayahs]);
+  }, [activeIndex, playing, juz.ayahs, paged.page]);
 
   // Remember the position in this juz for the resume card.
   useEffect(() => {
@@ -122,8 +143,11 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
       }
       return;
     }
+    // The page follows the recitation, so the next ayah is on screen.
     if (activeIndex !== null && activeIndex < juz.ayahs.length - 1) {
-      setActiveIndex(activeIndex + 1);
+      const next = activeIndex + 1;
+      setActiveIndex(next);
+      paged.goToIndex(next);
     } else {
       setPlaying(false);
     }
@@ -173,9 +197,17 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
 
         <GirihRule className="my-10" />
 
+        <ReaderPager
+          page={paged.page}
+          pageCount={paged.pageCount}
+          onPage={paged.setPage}
+          rangeLabel={`Ayahs ${paged.offset + 1} to ${Math.min(paged.offset + pageSize, juz.ayahs.length)} of ${juz.ayahs.length}`}
+        />
+
+        <div className="mt-8">
         {mushaf ? (
           <MushafView
-            ayahs={juz.ayahs}
+            ayahs={paged.items}
             arabicSize={settings.quran.arabicSize}
             activeAyah={current?.globalNumber ?? null}
             onSelect={(ayah) => setSheetAyah(ayah as JuzAyah)}
@@ -183,7 +215,9 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
           />
         ) : (
           <div className="flex flex-col gap-2">
-            {juz.ayahs.map((ayah, index) => (
+            {paged.items.map((ayah, pageIndex) => {
+              const index = paged.offset + pageIndex;
+              return (
               <div key={ayah.globalNumber}>
                 {ayah.startsSurah ? (
                   <header className="hd-card mb-4 mt-8 px-6 py-6 text-center">
@@ -229,9 +263,20 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
                   onTafsir={() => setTafsir(ayah)}
                 />
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
+        </div>
+
+        <GirihRule className="my-10" />
+
+        <ReaderPager
+          page={paged.page}
+          pageCount={paged.pageCount}
+          onPage={paged.setPage}
+          rangeLabel={`Ayahs ${paged.offset + 1} to ${Math.min(paged.offset + pageSize, juz.ayahs.length)} of ${juz.ayahs.length}`}
+        />
 
         <GirihRule className="my-10" />
 
@@ -283,10 +328,16 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
         duration={duration}
         repeat={repeat}
         onToggle={() => setPlaying((p) => !p)}
-        onPrevious={() => setActiveIndex((i) => Math.max(0, (i ?? 0) - 1))}
-        onNext={() =>
-          setActiveIndex((i) => Math.min(juz.ayahs.length - 1, (i ?? 0) + 1))
-        }
+        onPrevious={() => {
+          const next = Math.max(0, (activeIndex ?? 0) - 1);
+          setActiveIndex(next);
+          paged.goToIndex(next);
+        }}
+        onNext={() => {
+          const next = Math.min(juz.ayahs.length - 1, (activeIndex ?? 0) + 1);
+          setActiveIndex(next);
+          paged.goToIndex(next);
+        }}
         onSeek={(fraction) => {
           const audio = audioRef.current;
           if (!audio || !Number.isFinite(audio.duration)) return;

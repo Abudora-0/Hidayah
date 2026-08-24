@@ -615,11 +615,53 @@ select:hover {
 
 /* The page ground. A soft pool of light near the top, fading into the deeper
    tone, so the surface has a light source rather than one flat value. */
-/* One flat tone. This carried a wash from a darker value into a lighter one,
-   which read as a visible band across the page rather than as depth. The
-   lighter of the two is kept. */
+/* The page ground.
+ *
+ * This began as a wash from a darker tone into a lighter one, which read as a
+ * band across the page rather than as depth, so the gradient is gone. What
+ * replaces it is a girih lattice tiled at low contrast: the same interlace as
+ * the mark, repeated. Because it tiles, every part of the page carries the
+ * same texture, so there is no light to dark shift anywhere, only surface.
+ *
+ * It is drawn with currentColor through a mask rather than baked into the data
+ * URI, so it follows the active theme instead of needing six copies. */
 .hd-ground {
   background-color: var(--ground);
+  position: relative;
+  isolation: isolate;
+}
+
+.hd-ground::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  /* Interlaced squares, the girih tile, as a repeating unit. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.4'%3E%3Crect x='34' y='34' width='52' height='52'/%3E%3Crect x='34' y='34' width='52' height='52' transform='rotate(45 60 60)'/%3E%3Ccircle cx='60' cy='60' r='3'/%3E%3Crect x='0' y='0' width='120' height='120' opacity='0.45'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 120px 120px;
+
+  /* The image supplies the shape, the theme supplies the colour. */
+  background-color: var(--gold);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.4'%3E%3Crect x='34' y='34' width='52' height='52'/%3E%3Crect x='34' y='34' width='52' height='52' transform='rotate(45 60 60)'/%3E%3Ccircle cx='60' cy='60' r='3'/%3E%3Crect x='0' y='0' width='120' height='120' opacity='0.45'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.4'%3E%3Crect x='34' y='34' width='52' height='52'/%3E%3Crect x='34' y='34' width='52' height='52' transform='rotate(45 60 60)'/%3E%3Ccircle cx='60' cy='60' r='3'/%3E%3Crect x='0' y='0' width='120' height='120' opacity='0.45'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size: 120px 120px;
+  mask-size: 120px 120px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  background-image: none;
+
+  opacity: 0.055;
+}
+
+/* The engraving is decoration. Anyone who has asked for less motion and less
+   visual noise does not need it. */
+@media (prefers-reduced-motion: reduce) {
+  .hd-ground::before {
+    opacity: 0.03;
+  }
 }
 
 /* A panel that catches light along its upper edge. */
