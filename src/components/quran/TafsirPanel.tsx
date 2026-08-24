@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { GirihRule } from "@/components/ornament/GirihRule";
 import { Select } from "@/components/ui/Select";
 import { TAFSIRS, findTafsir } from "@/data/editions";
+import { useLanguage } from "@/lib/i18n";
 
 type TafsirPanelProps = {
   open: boolean;
@@ -57,6 +58,7 @@ export function TafsirPanel({
   onEdition,
   onClose,
 }: TafsirPanelProps) {
+  const { t } = useLanguage();
   const edition = findTafsir(editionId);
   const isUrdu = edition.language === "urdu";
 
@@ -127,7 +129,7 @@ export function TafsirPanel({
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
           <div className="min-w-0">
             <p className="text-[0.62rem] uppercase tracking-[0.28em] text-ink-faint">
-              Tafsir
+              {t("tafsir.title")}
             </p>
             <h2 className="font-kufi mt-1 truncate text-lg text-ink">
               {surahName} {surahNumber}:{ayahNumber}
@@ -137,7 +139,7 @@ export function TafsirPanel({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close the tafsir"
+            aria-label={t("ayah.close")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
@@ -155,7 +157,7 @@ export function TafsirPanel({
           <Select
             value={editionId}
             onChange={onEdition}
-            label="Choose a tafsir"
+            label={t("tafsir.choose")}
             options={TAFSIRS.map((tafsir) => ({
               value: tafsir.id,
               label: tafsir.name,
@@ -178,8 +180,7 @@ export function TafsirPanel({
             </div>
           ) : status === "error" ? (
             <p className="text-sm leading-relaxed text-ink-dim">
-              This tafsir could not be loaded. Try a different edition, or check
-              your connection.
+{t("tafsir.unavailable")}
             </p>
           ) : text ? (
             <>
@@ -201,8 +202,7 @@ export function TafsirPanel({
             </>
           ) : (
             <p className="text-sm leading-relaxed text-ink-dim">
-              This edition has no commentary for this ayah. Some tafsirs cover a
-              passage as a whole rather than each ayah in turn.
+{t("tafsir.noneForAyah")}
             </p>
           )}
         </div>

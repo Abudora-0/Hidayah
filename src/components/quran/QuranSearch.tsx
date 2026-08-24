@@ -7,6 +7,7 @@ import { GirihRule } from "@/components/ornament/GirihRule";
 import { Select } from "@/components/ui/Select";
 import { ENGLISH_EDITIONS, URDU_EDITIONS } from "@/data/editions";
 import { updateSettings, useSettings } from "@/lib/settings";
+import { useLanguage } from "@/lib/i18n";
 
 type Match = {
   number: number;
@@ -31,6 +32,7 @@ type Result = {
  * someone who wants to look up one word.
  */
 export function QuranSearch() {
+  const { t } = useLanguage();
   const settings = useSettings();
   const [query, setQuery] = useState("");
   const [edition, setEdition] = useState(settings.quran.englishEdition);
@@ -87,7 +89,7 @@ export function QuranSearch() {
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="flex-1">
           <label className="sr-only" htmlFor="quran-search">
-            Search the Quran
+            {t('search.title')}
           </label>
           <input
             id="quran-search"
@@ -95,7 +97,7 @@ export function QuranSearch() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search the translation, for example mercy"
+            placeholder={t('search.placeholder')}
             autoComplete="off"
             autoFocus
           />
@@ -125,7 +127,7 @@ export function QuranSearch() {
 
       {trimmed.length < 2 ? (
         <p className="py-12 text-center text-sm text-ink-dim">
-          Type at least two letters to search.
+          {t('search.minLength')}
         </p>
       ) : searching || stale ? (
         <div className="flex flex-col gap-3" aria-label="Searching">
@@ -139,17 +141,16 @@ export function QuranSearch() {
         </div>
       ) : showing?.failed ? (
         <p className="py-12 text-center text-sm text-ink-dim">
-          The search could not be run. Check your connection and try again.
+          {t('search.failed')}
         </p>
       ) : showing && showing.count === 0 ? (
         <p className="py-12 text-center text-sm text-ink-dim">
-          Nothing found for {trimmed}. Try a different word or another
-          translation, since wording differs between them.
+          {t('search.noResults', { query: trimmed })}
         </p>
       ) : showing ? (
         <>
           <p className="mb-5 text-xs uppercase tracking-[0.22em] text-ink-faint">
-            {showing.count} {showing.count === 1 ? "result" : "results"}
+            {t('search.results', { count: showing.count })}
             {showing.matches.length < showing.count
               ? `, showing the first ${showing.matches.length}`
               : ""}

@@ -77,14 +77,39 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
     playingRef.current = playing;
   }, [playing]);
 
-  // Load only when the track changes, or pausing and resuming would reassign
-  // the source and restart the ayah rather than continuing it.
+  // True while the source is being swapped for the next ayah.
+  //
+  // Calling load() on a media element fires a pause event. With the pause
+  // handler mirroring that into state, every ayah that finished immediately
+  // set playing to false and stopped the recitation, which is why playback
+  // never carried on to the next ayah by itself.
+  const switchingRef = useRef(false);
+
+  // Load only when the track itself changes. Depending on `playing` here as
+  // well meant pausing and resuming reassigned the source and restarted the
+  // ayah instead of continuing it.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !src) return;
+
+    switchingRef.current = true;
     audio.src = src;
     audio.load();
-    if (playingRef.current) audio.play().catch(() => setPlaying(false));
+
+    if (!playingRef.current) {
+      switchingRef.current = false;
+      return;
+    }
+
+    audio
+      .play()
+      .then(() => {
+        switchingRef.current = false;
+      })
+      .catch(() => {
+        switchingRef.current = false;
+        setPlaying(false);
+      });
   }, [src]);
 
   useEffect(() => {
@@ -314,7 +339,12 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
         onDurationChange={(e) => setDuration(e.currentTarget.duration)}
         onEnded={onEnded}
         onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        // Ignored while the source is being swapped, since load() fires a
+        // pause that does not mean the listener stopped anything. A pause from
+        // the operating system media keys still registers.
+        onPause={() => {
+          if (!switchingRef.current) setPlaying(false);
+        }}
       />
 
       <AudioPlayer

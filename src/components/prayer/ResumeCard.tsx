@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useReading } from "@/lib/reading";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * Picks reading back up where it was left.
@@ -11,6 +12,7 @@ import { useReading } from "@/lib/reading";
  * that was actually on screen rather than the last one opened.
  */
 export function ResumeCard({ className }: { className?: string }) {
+  const { t } = useLanguage();
   const { lastRead } = useReading();
 
   if (!lastRead) return null;
@@ -38,7 +40,7 @@ export function ResumeCard({ className }: { className?: string }) {
 
       <span className="min-w-0 flex-1">
         <span className="block text-[0.62rem] uppercase tracking-[0.24em] text-ink-faint">
-          Continue reading
+          {t('quran.continueReading')}
         </span>
         <span className="mt-1 block truncate font-kufi text-base text-ink">
           {lastRead.label}

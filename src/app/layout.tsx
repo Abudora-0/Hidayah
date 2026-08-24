@@ -7,6 +7,7 @@ import {
   Reem_Kufi,
 } from "next/font/google";
 
+import { LanguageEffect } from "@/components/ui/LanguageSwitcher";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import {
@@ -77,8 +78,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#06231c" },
-    { media: "(prefers-color-scheme: light)", color: "#f2ede0" },
+    { media: "(prefers-color-scheme: dark)", color: "#171614" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f4ee" },
   ],
 };
 
@@ -95,6 +96,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
       <body className="hd-ground flex min-h-full flex-col">
+        <LanguageEffect />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

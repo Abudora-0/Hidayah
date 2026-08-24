@@ -21,6 +21,7 @@ import {
   toHijri,
   type HijriDate,
 } from "@/lib/hijri";
+import { useLanguage } from "@/lib/i18n";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -34,6 +35,7 @@ type Cell = {
 };
 
 export function HijriCalendar() {
+  const { t } = useLanguage();
   const now = useNow();
   const [offset, setOffset] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -123,7 +125,7 @@ export function HijriCalendar() {
             setOffset((v) => v - 1);
             setSelected(null);
           }}
-          aria-label="Previous month"
+          aria-label={t('calendar.previousMonth')}
           className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
@@ -148,7 +150,7 @@ export function HijriCalendar() {
             setOffset((v) => v + 1);
             setSelected(null);
           }}
-          aria-label="Next month"
+          aria-label={t('calendar.nextMonth')}
           className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
@@ -167,7 +169,7 @@ export function HijriCalendar() {
             }}
             className="rounded-full border border-line px-4 py-1.5 text-xs text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold-ink"
           >
-            Back to this month
+            {t('calendar.backToMonth')}
           </button>
         </div>
       ) : null}
@@ -286,12 +288,11 @@ export function HijriCalendar() {
             </ul>
           ) : selectedCell.isWhite ? (
             <p className="mt-4 text-xs leading-relaxed text-ink-dim">
-              One of the white days, the thirteenth to fifteenth of every month,
-              kept as a fast.
+              {t('calendar.whiteDayNote')}
             </p>
           ) : (
             <p className="mt-4 text-xs text-ink-faint">
-              Nothing particular is marked on this day.
+              {t('calendar.nothingMarked')}
             </p>
           )}
         </div>
@@ -301,7 +302,7 @@ export function HijriCalendar() {
 
       <section>
         <h3 className="font-kufi text-sm uppercase tracking-[0.24em] text-ink-faint">
-          Coming up
+          {t('calendar.comingUp')}
         </h3>
         <ul className="mt-5 flex flex-col gap-2">
           {upcoming.map(({ occasion, date, year }) => (
@@ -336,8 +337,7 @@ export function HijriCalendar() {
       </section>
 
       <p className="mt-8 text-center text-xs leading-relaxed text-ink-faint">
-        Dates follow the Umm al Qura calendar, which is calculated rather than
-        sighted. Your local announcement may fall a day either side.
+        {t('calendar.sightingNote')}
       </p>
     </div>
   );

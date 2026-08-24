@@ -12,8 +12,10 @@ import {
   type ReadingMode,
   type Settings,
 } from "@/lib/settings";
+import { useLanguage } from "@/lib/i18n";
 
 export function ReaderControls({ settings }: { settings: Settings }) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -36,7 +38,7 @@ export function ReaderControls({ settings }: { settings: Settings }) {
         <svg viewBox="0 0 24 24" className="h-4 w-4 text-gold" fill="none" aria-hidden="true">
           <path d="M4 7h16M4 12h10M4 17h13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
-        Display
+        {t("reader.display")}
       </button>
 
       <Popover
@@ -50,7 +52,7 @@ export function ReaderControls({ settings }: { settings: Settings }) {
       >
         <div>
           <p className="text-[0.62rem] uppercase tracking-[0.26em] text-ink-faint">
-            Reading mode
+            {t("reader.mode")}
           </p>
           <div
             className="mt-3 grid grid-cols-2 gap-1.5"
@@ -59,8 +61,8 @@ export function ReaderControls({ settings }: { settings: Settings }) {
           >
             {(
               [
-                { key: "study", label: "Study", note: "Ayah by ayah" },
-                { key: "mushaf", label: "Mushaf", note: "Flowing text" },
+                { key: "study", label: t("reader.study"), note: t("reader.studyNote") },
+                { key: "mushaf", label: t("reader.mushaf"), note: t("reader.mushafNote") },
               ] as { key: ReadingMode; label: string; note: string }[]
             ).map((option) => (
               <button
@@ -85,7 +87,7 @@ export function ReaderControls({ settings }: { settings: Settings }) {
           <div className="hd-rule my-4" />
 
           <p className="text-[0.62rem] uppercase tracking-[0.26em] text-ink-faint">
-            Reading size
+            {t("reader.size")}
           </p>
           <div className="mt-3 flex items-center justify-between gap-3">
             <span
@@ -110,12 +112,12 @@ export function ReaderControls({ settings }: { settings: Settings }) {
           <div className="hd-rule my-4" />
 
           <p className="text-[0.62rem] uppercase tracking-[0.26em] text-ink-faint">
-            Translations
+            {t("reader.translations")}
           </p>
 
           <div className="mt-3 flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-ink">English</span>
+              <span className="text-sm text-ink">{t("reader.english")}</span>
               <Toggle
                 size="sm"
                 checked={settings.quran.showEnglish}
@@ -138,7 +140,7 @@ export function ReaderControls({ settings }: { settings: Settings }) {
             ) : null}
 
             <div className="mt-1 flex items-center justify-between gap-3">
-              <span className="text-sm text-ink">Urdu</span>
+              <span className="text-sm text-ink">{t("reader.urdu")}</span>
               <Toggle
                 size="sm"
                 checked={settings.quran.showUrdu}

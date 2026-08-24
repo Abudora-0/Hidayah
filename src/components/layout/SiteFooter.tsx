@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 
 import { Wordmark } from "@/components/ornament/Wordmark";
+import { useLanguage } from "@/lib/i18n";
 
 const BROWSE = [
   { label: "Prayer times", href: "/" },
@@ -19,6 +22,8 @@ const SOURCES = [
 ];
 
 export function SiteFooter() {
+  const { t } = useLanguage();
+
   return (
     <footer className="mt-16 border-t border-line bg-surface-1">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
@@ -29,16 +34,13 @@ export function SiteFooter() {
           <div className="col-span-2 lg:col-span-1">
             <Wordmark size={17} animated={false} />
             <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-faint">
-              Prayer times are calculated on your device, so they work offline.
-              Occasion dates follow the Umm al Qura calendar, which is
-              calculated rather than sighted, and may fall a day either side of
-              your local announcement.
+              {t('footer.note')}
             </p>
           </div>
 
           <nav aria-label="Footer">
             <h2 className="text-[0.6rem] uppercase tracking-[0.26em] text-ink-faint">
-              Browse
+              {t('footer.browse')}
             </h2>
             <ul className="mt-3.5 flex flex-col gap-2">
               {BROWSE.map((item) => (
@@ -56,7 +58,7 @@ export function SiteFooter() {
 
           <div>
             <h2 className="text-[0.6rem] uppercase tracking-[0.26em] text-ink-faint">
-              Built on
+              {t('footer.builtOn')}
             </h2>
             <ul className="mt-3.5 flex flex-col gap-2">
               {SOURCES.map((source) => (
@@ -82,7 +84,7 @@ export function SiteFooter() {
 
         <div className="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-xs text-ink-faint">
-            Released under the MIT licence
+            {t('footer.licence')}
           </p>
           <p
             dir="rtl"

@@ -20,6 +20,7 @@ import {
   type PrayerKey,
 } from "@/lib/prayer";
 import { setAlarmForPrayer, useSettings } from "@/lib/settings";
+import { useLanguage } from "@/lib/i18n";
 import { OBLIGATORY_PRAYERS } from "@/lib/prayer";
 import {
   currentStreak,
@@ -33,6 +34,7 @@ import { ResumeCard } from "./ResumeCard";
 import { PrayerStreak } from "./PrayerStreak";
 
 export function PrayerDashboard() {
+  const { t } = useLanguage();
   const settings = useSettings();
   const now = useNow();
   const location = useSyncExternalStore(
@@ -155,39 +157,38 @@ export function PrayerDashboard() {
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="hd-card flex flex-col items-center gap-4 p-6">
             <h2 className="font-kufi text-sm uppercase tracking-[0.24em] text-ink-faint">
-              Qibla
+              {t("prayer.qibla")}
             </h2>
             <QiblaCompass bearing={schedule.qibla} />
           </div>
 
           <div className="hd-card p-6">
             <h2 className="font-kufi text-sm uppercase tracking-[0.24em] text-ink-faint">
-              Night
+              {t("prayer.night")}
             </h2>
             <dl className="mt-5 flex flex-col gap-4">
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-sm text-ink-dim">Middle of the night</dt>
+                <dt className="text-sm text-ink-dim">{t("prayer.middleOfNight")}</dt>
                 <dd className="font-kufi tabular-nums text-gold-ink">
                   {formatTime(schedule.sunnah.middleOfTheNight, settings.display.hour12)}
                 </dd>
               </div>
               <div className="hd-rule" />
               <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-sm text-ink-dim">Last third begins</dt>
+                <dt className="text-sm text-ink-dim">{t("prayer.lastThird")}</dt>
                 <dd className="font-kufi tabular-nums text-gold-ink">
                   {formatTime(schedule.sunnah.lastThirdOfTheNight, settings.display.hour12)}
                 </dd>
               </div>
             </dl>
             <p className="mt-5 text-xs leading-relaxed text-ink-faint">
-              The last third is the time of tahajjud, counted from Maghrib to
-              the following Fajr.
+{t("prayer.tahajjudNote")}
             </p>
           </div>
 
           <div className="hd-card p-6">
             <h2 className="font-kufi text-sm uppercase tracking-[0.24em] text-ink-faint">
-              Tracker
+              {t("prayer.tracker")}
             </h2>
             <PrayerStreak
               streak={streak}
@@ -199,15 +200,14 @@ export function PrayerDashboard() {
 
           <div className="hd-card p-6 sm:col-span-2 lg:col-span-3">
             <h2 className="font-kufi text-sm uppercase tracking-[0.24em] text-ink-faint">
-              Calculation
+              {t("prayer.calculation")}
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-ink-dim">
-              Times are computed on your device from your coordinates, so they
-              work offline and are never rate limited.
+{t("prayer.calculationNote")}
             </p>
             <div className="hd-rule my-4" />
             <p className="text-xs text-ink-faint">
-              Method and madhab can be changed in settings.
+{t("prayer.methodNote")}
             </p>
           </div>
         </div>
@@ -233,6 +233,8 @@ function LocationOnboarding({
 }: {
   onChange: (location: StoredLocation) => void;
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="relative overflow-hidden">
       <Lattice className="text-gold" scale={96} opacity={0.06} />
@@ -242,10 +244,9 @@ function LocationOnboarding({
 
         <GirihRule className="my-10 w-full max-w-xs" />
 
-        <h1 className="font-kufi text-2xl text-ink">Where are you praying?</h1>
+        <h1 className="font-kufi text-2xl text-ink">{t("location.where")}</h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-dim">
-          Prayer times depend on your coordinates. Allow location access, or
-          pick the nearest city. Your location stays on this device.
+{t("location.whyNote")}
         </p>
 
         <div className="mt-8">

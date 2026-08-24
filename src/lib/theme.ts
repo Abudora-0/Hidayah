@@ -4,7 +4,7 @@ export const MODES = ["dark", "light"] as const;
 export type Theme = (typeof THEMES)[number];
 export type Mode = (typeof MODES)[number];
 
-export const DEFAULT_THEME: Theme = "emerald";
+export const DEFAULT_THEME: Theme = "ink";
 export const DEFAULT_MODE: Mode = "dark";
 
 export const THEME_STORAGE_KEY = "hidayah-theme";

@@ -6,16 +6,18 @@ import { useEffect, useState } from "react";
 
 import { Wordmark } from "@/components/ornament/Wordmark";
 import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
+import { useLanguage } from "@/lib/i18n";
 
 const NAV = [
-  { href: "/", label: "Prayer", arabic: "الصلاة" },
-  { href: "/quran", label: "Quran", arabic: "القرآن" },
-  { href: "/calendar", label: "Calendar", arabic: "التقويم" },
-  { href: "/tasbih", label: "Tasbih", arabic: "تسبيح" },
-  { href: "/settings", label: "Settings", arabic: "الإعدادات" },
+  { href: "/", key: "nav.prayer", arabic: "الصلاة" },
+  { href: "/quran", key: "nav.quran", arabic: "القرآن" },
+  { href: "/calendar", key: "nav.calendar", arabic: "التقويم" },
+  { href: "/tasbih", key: "nav.tasbih", arabic: "تسبيح" },
+  { href: "/settings", key: "nav.settings", arabic: "الإعدادات" },
 ];
 
 export function SiteHeader() {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -65,7 +67,7 @@ export function SiteHeader() {
                   active ? "text-gold-ink" : "text-ink-dim hover:text-ink"
                 }`}
               >
-                {item.label}
+                {t(item.key)}
                 <span
                   className={`absolute inset-x-3 -bottom-px h-px origin-center bg-gold transition-transform duration-400 ${
                     active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
@@ -83,7 +85,7 @@ export function SiteHeader() {
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
-            aria-label="Open menu"
+            aria-label={t("nav.openMenu")}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-line transition-colors duration-300 hover:border-gold md:hidden"
           >
             <span className="relative block h-3 w-4">
@@ -119,7 +121,7 @@ export function SiteHeader() {
                     isActive(item.href) ? "text-gold-ink" : "text-ink-dim"
                   }`}
                 >
-                  {item.label}
+                  {t(item.key)}
                   <span dir="rtl" lang="ar" className="font-kufi text-ink-faint">
                     {item.arabic}
                   </span>

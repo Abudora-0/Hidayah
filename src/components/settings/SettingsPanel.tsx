@@ -25,6 +25,9 @@ import {
   type MethodKey,
 } from "@/lib/prayer";
 import { setAlarmForPrayer, updateSettings, useSettings } from "@/lib/settings";
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 
 function Section({
   title,
@@ -73,6 +76,7 @@ function Row({
 }
 
 export function SettingsPanel() {
+  const { t } = useLanguage();
   const settings = useSettings();
   const location = useSyncExternalStore(
     locationStore.subscribe,
@@ -82,20 +86,19 @@ export function SettingsPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Section title="Location" arabic="الموقع">
+      <Section title={t("settings.location")} arabic="الموقع">
         <div className="flex flex-col items-start gap-4">
           <LocationBar location={location} onChange={writeStoredLocation} />
           <p className="text-xs leading-relaxed text-ink-faint">
-            Kept in this browser. It is only sent to the server if you turn on
-            background notifications below.
+{t("settings.locationNote")}
           </p>
         </div>
       </Section>
 
-      <Section title="Calculation" arabic="الحساب">
+      <Section title={t("settings.calculation")} arabic="الحساب">
         <div className="flex flex-col gap-4">
           <div>
-            <p className="mb-2 text-sm text-ink">Authority</p>
+            <p className="mb-2 text-sm text-ink">{t("settings.authority")}</p>
             <Select
               value={settings.prayer.method}
               onChange={(value) =>
@@ -114,7 +117,7 @@ export function SettingsPanel() {
           </div>
 
           <div>
-            <p className="mb-2 text-sm text-ink">Madhab, for Asr</p>
+            <p className="mb-2 text-sm text-ink">{t("settings.madhab")}</p>
             <Select
               value={settings.prayer.madhab}
               onChange={(value) =>
@@ -132,7 +135,7 @@ export function SettingsPanel() {
             />
           </div>
 
-          <Row label="Twelve hour clock" hint="Show times as am and pm">
+          <Row label={t("settings.twelveHour")} hint={t("settings.twelveHourNote")}>
             <Toggle
               checked={settings.display.hour12}
               onChange={(next) =>
@@ -159,13 +162,13 @@ export function SettingsPanel() {
         </div>
       </Section>
 
-      <Section title="Prayer alarm" arabic="التنبيه">
+      <Section title={t("settings.alarm")} arabic="التنبيه">
         <div className="flex flex-col gap-1">
           <PushControl location={location} settings={settings} />
 
           <GirihRule className="my-4" compact />
 
-          <p className="mb-1 text-sm text-ink">Which prayers</p>
+          <p className="mb-1 text-sm text-ink">{t("settings.whichPrayers")}</p>
           {OBLIGATORY_PRAYERS.map((prayer) => (
             <Row
               key={prayer}
@@ -201,9 +204,26 @@ export function SettingsPanel() {
         </div>
       </Section>
 
-      <Section title="Reading" arabic="القراءة">
+      <Section title={t("settings.appearance")} arabic="المظهر">
         <div className="flex flex-col gap-4">
-          <Row label="Arabic size">
+          <div>
+            <p className="mb-2 text-sm text-ink">{t("settings.language")}</p>
+            <p className="mb-3 text-xs text-ink-faint">
+              {t("settings.languageNote")}
+            </p>
+            <LanguageSwitcher compact />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm text-ink">{t("nav.changeTheme")}</p>
+            <ThemeSwitcher />
+          </div>
+        </div>
+      </Section>
+
+      <Section title={t("settings.reading")} arabic="القراءة">
+        <div className="flex flex-col gap-4">
+          <Row label={t("settings.arabicSize")}>
             <Counter
               value={settings.quran.arabicSize}
               onChange={(next) =>
@@ -220,7 +240,7 @@ export function SettingsPanel() {
             />
           </Row>
 
-          <Row label="Show English">
+          <Row label={t("settings.showEnglish")}>
             <Toggle
               checked={settings.quran.showEnglish}
               onChange={(next) =>
@@ -249,7 +269,7 @@ export function SettingsPanel() {
             }))}
           />
 
-          <Row label="Show Urdu">
+          <Row label={t("settings.showUrdu")}>
             <Toggle
               checked={settings.quran.showUrdu}
               onChange={(next) =>
@@ -280,7 +300,7 @@ export function SettingsPanel() {
           />
 
           <div>
-            <p className="mb-2 text-sm text-ink">Reciter</p>
+            <p className="mb-2 text-sm text-ink">{t("settings.reciter")}</p>
             <Select
               value={settings.quran.reciter}
               onChange={(value) =>
@@ -300,7 +320,7 @@ export function SettingsPanel() {
           </div>
 
           <div>
-            <p className="mb-2 text-sm text-ink">Tafsir</p>
+            <p className="mb-2 text-sm text-ink">{t("settings.tafsir")}</p>
             <Select
               value={settings.quran.tafsirEdition}
               onChange={(value) =>

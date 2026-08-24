@@ -1,6 +1,7 @@
 "use client";
 
 import { PRAYER_LABELS, formatTime, splitDuration, type PrayerKey } from "@/lib/prayer";
+import { useLanguage } from "@/lib/i18n";
 
 type CountdownRingProps = {
   prayerKey: PrayerKey;
@@ -34,6 +35,7 @@ export function CountdownRing({
   hour12,
   isTomorrow,
 }: CountdownRingProps) {
+  const { t, language } = useLanguage();
   const { hours, minutes, seconds } = splitDuration(remainingMs);
   const label = PRAYER_LABELS[prayerKey];
 
@@ -114,7 +116,7 @@ export function CountdownRing({
           box, and the labels are tracked tighter so their corners clear it. */}
       <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center">
         <p className="max-w-full truncate text-[0.55rem] uppercase tracking-[0.18em] text-ink-faint">
-          {isTomorrow ? "Tomorrow" : "Next prayer"}
+          {isTomorrow ? t("prayer.tomorrow") : t("prayer.next")}
         </p>
 
         <p
@@ -124,7 +126,9 @@ export function CountdownRing({
         >
           {label.ar}
         </p>
-        <p className="font-kufi text-lg leading-tight text-ink">{label.en}</p>
+        <p className="font-kufi text-lg leading-tight text-ink">
+          {language === "ur" ? label.ur : label.en}
+        </p>
 
         <p className="mt-1.5 font-kufi text-xl tabular-nums leading-none text-gold-ink">
           {formatTime(target, hour12)}

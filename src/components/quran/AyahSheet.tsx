@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { GirihRule } from "@/components/ornament/GirihRule";
 import type { Ayah } from "@/lib/quran";
+import { useLanguage } from "@/lib/i18n";
 
 type AyahSheetProps = {
   ayah: (Ayah & { surahNumber?: number }) | null;
@@ -38,6 +39,8 @@ export function AyahSheet({
   onBookmark,
   onClose,
 }: AyahSheetProps) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     if (!ayah) return;
     function onKeyDown(event: KeyboardEvent) {
@@ -77,7 +80,7 @@ export function AyahSheet({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t("ayah.close")}
               className="grid h-8 w-8 place-items-center rounded-full border border-line text-ink-dim transition-colors duration-300 hover:border-gold hover:text-gold"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
@@ -117,7 +120,7 @@ export function AyahSheet({
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
                 {isPlaying ? <path d="M8 5h3v14H8zM13 5h3v14h-3z" /> : <path d="M8 5.5v13l11-6.5z" />}
               </svg>
-              {isPlaying ? "Pause" : "Play"}
+              {isPlaying ? t("ayah.pause") : t("ayah.play")}
             </button>
 
             <button
@@ -125,7 +128,7 @@ export function AyahSheet({
               onClick={onTafsir}
               className="rounded-full border border-line px-4 py-2 text-sm text-ink-dim transition-colors duration-300 hover:border-gold hover:text-gold-ink"
             >
-              Tafsir
+              {t("tafsir.title")}
             </button>
 
             <button
@@ -138,7 +141,7 @@ export function AyahSheet({
                   : "border-line text-ink-dim hover:border-gold hover:text-gold-ink"
               }`}
             >
-              {isBookmarked ? "Bookmarked" : "Bookmark"}
+              {isBookmarked ? t("ayah.bookmarked") : t("ayah.bookmark")}
             </button>
           </div>
         </div>

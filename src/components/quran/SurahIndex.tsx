@@ -6,14 +6,9 @@ import { useMemo, useState } from "react";
 import { GirihRule } from "@/components/ornament/GirihRule";
 import { JUZ_NAMES, JUZ_STARTS } from "@/data/juz";
 import type { SurahSummary } from "@/lib/quran";
+import { useLanguage } from "@/lib/i18n";
 
 type Filter = "all" | "Meccan" | "Medinan";
-
-const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "Meccan", label: "Meccan" },
-  { key: "Medinan", label: "Medinan" },
-];
 
 type View = "surah" | "juz";
 
@@ -24,6 +19,14 @@ export function SurahIndex({
   surahs: SurahSummary[];
   initialView?: View;
 }) {
+  const { t } = useLanguage();
+
+  const FILTERS: { key: Filter; label: string }[] = [
+    { key: "all", label: t("quran.filterAll") },
+    { key: "Meccan", label: t("quran.filterMeccan") },
+    { key: "Medinan", label: t("quran.filterMedinan") },
+  ];
+
   const [view, setView] = useState<View>(initialView);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -57,8 +60,8 @@ export function SurahIndex({
       >
         {(
           [
-            { key: "surah", label: "By surah" },
-            { key: "juz", label: "By para" },
+            { key: "surah", label: t("quran.bySurah") },
+            { key: "juz", label: t("quran.byPara") },
           ] as { key: View; label: string }[]
         ).map((option) => (
           <button
@@ -108,7 +111,7 @@ export function SurahIndex({
 
                   <span className="min-w-0 flex-1">
                     <span className="block font-kufi text-base text-ink">
-                      Para {entry.juz}
+                      {t('quran.para')} {entry.juz}
                     </span>
                     <span className="block truncate text-xs text-ink-faint">
                       Begins at {surah?.englishName ?? `Surah ${entry.surah}`}{" "}
@@ -133,14 +136,14 @@ export function SurahIndex({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <label className="sr-only" htmlFor="surah-search">
-            Search the surahs
+            {t('quran.searchPlaceholder')}
           </label>
           <input
             id="surah-search"
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by name, meaning or number"
+            placeholder={t('quran.searchPlaceholder')}
             autoComplete="off"
           />
         </div>
@@ -171,12 +174,12 @@ export function SurahIndex({
       <GirihRule className="my-8" />
 
       <p className="mb-5 text-xs uppercase tracking-[0.22em] text-ink-faint">
-        {results.length} {results.length === 1 ? "surah" : "surahs"}
+        {t('quran.surahCount', { count: results.length })}
       </p>
 
       {results.length === 0 ? (
         <p className="py-16 text-center text-sm text-ink-dim">
-          Nothing matches that search.
+          {t('quran.nothingMatches')}
         </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -228,7 +231,7 @@ export function SurahIndex({
                     {surah.translatedName}
                   </span>
                   <span className="mt-1 block text-[0.68rem] text-ink-faint">
-                    {surah.ayahCount} ayahs, {surah.revelation}
+                    {surah.ayahCount} {t('quran.ayahs')}, {surah.revelation}
                   </span>
                 </span>
 

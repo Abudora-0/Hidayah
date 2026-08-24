@@ -9,7 +9,6 @@
    first paint by the inline script in the root layout.
    ========================================================================== */
 
-:root,
 [data-theme="emerald"][data-mode="dark"] {
   --ground: #0a2a20;
   --panel-top: #134034;
@@ -78,6 +77,7 @@
   --on-gold: #0a1626;
 }
 
+:root,
 [data-theme="ink"][data-mode="dark"] {
   --ground: #171614;
   --panel-top: #2a2722;
@@ -260,9 +260,13 @@ body {
 @theme inline {
   --z-index-header: 30;
   --z-index-player: 40;
-  --z-index-popover: 60;
   --z-index-scrim: 70;
   --z-index-drawer: 80;
+
+  /* Above the drawer, not below it. A popover can be opened from inside a
+     drawer, as the tafsir edition picker is, and at a lower layer its options
+     rendered behind the drawer and looked like an empty dropdown. */
+  --z-index-popover: 90;
 }
 
 /* ==========================================================================

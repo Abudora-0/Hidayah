@@ -7,6 +7,7 @@ import {
   type PrayerEntry,
   type PrayerKey,
 } from "@/lib/prayer";
+import { useLanguage } from "@/lib/i18n";
 
 type PrayerTimelineProps = {
   /** Prayers already marked as prayed today. */
@@ -30,6 +31,8 @@ export function PrayerTimeline({
   alarms,
   onAlarmChange,
 }: PrayerTimelineProps) {
+  const { t, language } = useLanguage();
+
   return (
     <ol className="flex flex-col">
       {entries.map((entry, index) => {
@@ -91,7 +94,7 @@ export function PrayerTimeline({
                       isNext ? "text-gold-ink" : "text-ink"
                     }`}
                   >
-                    {label.en}
+                    {language === "ur" ? label.ur : label.en}
                   </span>
                   <span
                     dir="rtl"
@@ -102,7 +105,7 @@ export function PrayerTimeline({
                   </span>
                 </div>
                 <p className="mt-0.5 text-xs text-ink-faint">
-                  {isNext ? "Next" : isCurrent ? "Now" : label.note}
+                  {isNext ? t("quran.next") : isCurrent ? t("prayer.now") : label.note}
                 </p>
               </div>
 
@@ -120,7 +123,7 @@ export function PrayerTimeline({
                     type="button"
                     onClick={() => onTogglePrayed(entry.key)}
                     aria-pressed={prayed.includes(entry.key)}
-                    aria-label={`Mark ${label.en} as prayed`}
+                    aria-label={t("prayer.markAsPrayed", { name: label.en })}
                     title={
                       prayed.includes(entry.key)
                         ? `${label.en} marked as prayed`
@@ -147,7 +150,7 @@ export function PrayerTimeline({
                     size="sm"
                     checked={alarms[entry.key] ?? false}
                     onChange={(next) => onAlarmChange(entry.key, next)}
-                    label={`Alarm for ${label.en}`}
+                    label={t("prayer.alarmFor", { name: label.en })}
                   />
                 </>
               ) : (

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { GirihRule } from "@/components/ornament/GirihRule";
+import { useLanguage } from "@/lib/i18n";
 
 type Dhikr = {
   id: string;
@@ -93,6 +94,7 @@ const R = 112;
 const CIRC = 2 * Math.PI * R;
 
 export function TasbihCounter() {
+  const { t } = useLanguage();
   const counts = useSyncExternalStore(subscribe, read, () => EMPTY);
   const [activeId, setActiveId] = useState(DHIKR[0].id);
 
@@ -231,17 +233,15 @@ export function TasbihCounter() {
           onClick={reset}
           className="rounded-full border border-line px-4 py-2 text-xs text-ink-dim transition-colors duration-300 hover:border-gold hover:text-gold-ink"
         >
-          Reset this dhikr
+          {t('tasbih.reset')}
         </button>
         <span className="text-xs text-ink-faint">
-          {Math.floor(count / dhikr.target)} full{" "}
-          {Math.floor(count / dhikr.target) === 1 ? "round" : "rounds"}
+          {Math.floor(count / dhikr.target)} {t('tasbih.rounds')}
         </span>
       </div>
 
       <p className="mt-8 max-w-sm text-center text-xs leading-relaxed text-ink-faint">
-        Tap the circle, or press space. Counts are kept on this device and
-        carry over between visits.
+        {t('tasbih.instructions')}
       </p>
     </div>
   );

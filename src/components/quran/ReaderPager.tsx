@@ -1,5 +1,7 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n";
+
 type ReaderPagerProps = {
   page: number;
   pageCount: number;
@@ -20,6 +22,8 @@ export function ReaderPager({
   onPage,
   rangeLabel,
 }: ReaderPagerProps) {
+  const { t } = useLanguage();
+
   if (pageCount <= 1) return null;
 
   const current = page + 1;
@@ -43,14 +47,14 @@ export function ReaderPager({
   return (
     <nav
       className="flex flex-col items-center gap-3"
-      aria-label="Reading pages"
+      aria-label={t("reader.pages")}
     >
       <div className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => change(page - 1)}
           disabled={page === 0}
-          aria-label="Previous page"
+          aria-label={t("reader.previousPage")}
           className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold disabled:opacity-35 disabled:hover:border-line disabled:hover:text-ink-dim"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
@@ -84,7 +88,7 @@ export function ReaderPager({
           type="button"
           onClick={() => change(page + 1)}
           disabled={page >= pageCount - 1}
-          aria-label="Next page"
+          aria-label={t("reader.nextPage")}
           className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold disabled:opacity-35 disabled:hover:border-line disabled:hover:text-ink-dim"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">

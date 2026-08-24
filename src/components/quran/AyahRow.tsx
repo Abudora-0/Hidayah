@@ -4,6 +4,7 @@ import { memo, useState } from "react";
 
 import { AyahMarker } from "@/components/ornament/AyahMarker";
 import type { Ayah } from "@/lib/quran";
+import { useLanguage } from "@/lib/i18n";
 
 type AyahRowProps = {
   ayah: Ayah;
@@ -58,6 +59,7 @@ function AyahRowInner({
   onPlay,
   onTafsir,
 }: AyahRowProps) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -121,7 +123,7 @@ function AyahRowInner({
 
           <div className="mt-4 flex items-center gap-1 opacity-60 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
             <IconButton
-              label={isPlaying ? "Playing this ayah" : "Play this ayah"}
+              label={isPlaying ? t("ayah.playing") : t("ayah.play")}
               onClick={onPlay}
               active={isPlaying}
             >
@@ -134,7 +136,7 @@ function AyahRowInner({
               </svg>
             </IconButton>
 
-            <IconButton label="Read the tafsir" onClick={onTafsir}>
+            <IconButton label={t("ayah.tafsir")} onClick={onTafsir}>
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
                 <path
                   d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H5.5A1.5 1.5 0 0 1 4 15.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H14a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h4.5a1.5 1.5 0 0 0 1.5-1.5z"
@@ -145,7 +147,7 @@ function AyahRowInner({
               </svg>
             </IconButton>
 
-            <IconButton label={copied ? "Copied" : "Copy this ayah"} onClick={copy} active={copied}>
+            <IconButton label={copied ? t("ayah.copied") : t("ayah.copy")} onClick={copy} active={copied}>
               {copied ? (
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
                   <path
@@ -168,7 +170,7 @@ function AyahRowInner({
               {surahNumber}:{ayah.numberInSurah}
               {ayah.sajda ? (
                 <span className="ml-2 text-gold-ink" title="Verse of prostration">
-                  sajdah
+                  {t("ayah.sajdah")}
                 </span>
               ) : null}
             </span>

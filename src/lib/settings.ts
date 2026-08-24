@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
+import { DEFAULT_LANGUAGE, type Language } from "./i18n-shared";
 import {
   DEFAULT_PRAYER_SETTINGS,
   OBLIGATORY_PRAYERS,
@@ -14,7 +15,7 @@ export type ReadingMode = "study" | "mushaf";
 
 export type Settings = {
   prayer: { method: MethodKey; madhab: MadhabKey };
-  display: { hour12: boolean };
+  display: { hour12: boolean; language: Language };
   quran: {
     /**
      * study lays each ayah out separately with its translation and controls.
@@ -42,7 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
     method: DEFAULT_PRAYER_SETTINGS.method,
     madhab: DEFAULT_PRAYER_SETTINGS.madhab,
   },
-  display: { hour12: true },
+  display: { hour12: true, language: DEFAULT_LANGUAGE },
   quran: {
     readingMode: "study",
     showEnglish: true,

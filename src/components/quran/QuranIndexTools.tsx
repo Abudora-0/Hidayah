@@ -5,12 +5,14 @@ import Link from "next/link";
 import { ResumeCard } from "@/components/prayer/ResumeCard";
 import { GirihRule } from "@/components/ornament/GirihRule";
 import { useReading } from "@/lib/reading";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * The bar above the surah list: search, where you left off, and anything
  * bookmarked. All client side, since it reads from local storage.
  */
 export function QuranIndexTools({ className }: { className?: string }) {
+  const { t } = useLanguage();
   const { bookmarks } = useReading();
 
   return (
@@ -24,7 +26,7 @@ export function QuranIndexTools({ className }: { className?: string }) {
           <path d="m16 16 4.5 4.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         </svg>
         <span className="flex-1 text-sm text-ink-dim transition-colors duration-300 group-hover:text-ink">
-          Search the translations
+          {t('quran.searchTranslations')}
         </span>
         <span className="text-xs text-ink-faint">for example mercy</span>
       </Link>
@@ -35,7 +37,7 @@ export function QuranIndexTools({ className }: { className?: string }) {
         <>
           <GirihRule className="my-8" compact />
           <p className="mb-4 text-xs uppercase tracking-[0.22em] text-ink-faint">
-            Bookmarks
+            {t('quran.bookmarks')}
           </p>
           <ul className="flex flex-wrap gap-2">
             {bookmarks.slice(0, 12).map((bookmark) => (

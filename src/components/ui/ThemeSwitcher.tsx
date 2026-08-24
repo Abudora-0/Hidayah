@@ -3,6 +3,8 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { Popover } from "./Popover";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n";
 
 import {
   DEFAULT_MODE,
@@ -30,6 +32,7 @@ function readStored<T>(key: string, guard: (v: unknown) => v is T, fallback: T):
 }
 
 export function ThemeSwitcher() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>(() =>
     readStored(THEME_STORAGE_KEY, isTheme, DEFAULT_THEME),
@@ -74,7 +77,7 @@ export function ThemeSwitcher() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label="Change theme"
+        aria-label={t("nav.changeTheme")}
         className="group flex h-9 items-center gap-2 rounded-full border border-line px-3 transition-colors duration-300 hover:border-gold"
       >
         <span
@@ -132,6 +135,13 @@ export function ThemeSwitcher() {
               </button>
             ))}
           </div>
+
+          <div className="hd-rule my-3" />
+
+          <p className="px-1 pb-2 text-[0.65rem] uppercase tracking-[0.2em] text-ink-faint">
+            {t("nav.language")}
+          </p>
+          <LanguageSwitcher compact />
 
           <div className="hd-rule my-3" />
 
