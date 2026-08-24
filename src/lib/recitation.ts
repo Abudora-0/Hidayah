@@ -66,6 +66,11 @@ export function useRecitation({
     playingRef.current = playing;
   }, [playing]);
 
+  const visibleRef = useRef(visible);
+  useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
+
   const globalNumber = index === null ? undefined : globalNumberAt(index);
   const src = globalNumber ? ayahAudioUrl(reciterId, globalNumber) : undefined;
 
@@ -214,8 +219,22 @@ export function useRecitation({
   }, []);
 
   const close = useCallback(() => {
+    const audio = audioRef.current;
+
+    // Stopped at the element rather than only in state. A play() from the
+    // ayah that just ended can still be in flight when this runs, and asking
+    // React to stop does not cancel it, so the recitation used to carry on
+    // out of sight after the player was closed. Dropping the source ends both
+    // the playback and the download.
+    if (audio) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    }
+
     setPlaying(false);
     setVisible(false);
+    setIndex(null);
   }, []);
 
   return {
@@ -238,6 +257,9 @@ export function useRecitation({
     onEnded,
     onDurationChange: (value: number) => setDuration(value),
     onTimeUpdate: paint,
-    onPlay: () => setPlaying(true),
+    onPlay: () => {
+      if (!visibleRef.current) return;
+      setPlaying(true);
+    },
   };
 }
