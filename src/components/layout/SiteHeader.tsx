@@ -32,11 +32,15 @@ export function SiteHeader() {
     return href === "/" ? pathname === "/" : pathname.startsWith(href);
   }
 
+  // No backdrop blur on this bar. Blurring the backdrop of a sticky element
+  // forces a full re-blur every scroll frame, which smears the page while
+  // scrolling. A near opaque fill reads the same and costs nothing, and
+  // transition-colors keeps the browser from trying to transition filters.
   return (
     <header
-      className={`sticky top-0 z-40 border-b transition-all duration-400 ${
+      className={`sticky top-0 z-header border-b transition-colors duration-300 ${
         scrolled
-          ? "border-line bg-surface-0/88 backdrop-blur-xl"
+          ? "border-line bg-surface-0/95"
           : "border-transparent bg-transparent"
       }`}
     >

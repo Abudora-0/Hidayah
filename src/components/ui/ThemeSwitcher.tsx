@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+
+import { Popover } from "./Popover";
 
 import {
   DEFAULT_MODE,
@@ -35,7 +37,7 @@ export function ThemeSwitcher() {
   const [mode, setMode] = useState<Mode>(() =>
     readStored(MODE_STORAGE_KEY, isMode, DEFAULT_MODE),
   );
-  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // React's dev remount strips attributes it does not own from the html
   // element, wiping what the bootstrap script set. Re-applying before paint
@@ -63,27 +65,11 @@ export function ThemeSwitcher() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-
-    function onPointerDown(event: MouseEvent) {
-      if (!panelRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -102,8 +88,16 @@ export function ThemeSwitcher() {
         </span>
       </button>
 
-      {open ? (
-        <div className="hd-fade-up absolute right-0 top-11 z-50 w-60 rounded-[14px] border border-line bg-surface-1 p-3">
+      <Popover
+        open={open}
+        onClose={() => setOpen(false)}
+        anchorRef={triggerRef}
+        align="end"
+        width={240}
+        ariaLabel="Theme"
+        className="p-3"
+      >
+        <div>
           <p className="px-1 pb-2 text-[0.65rem] uppercase tracking-[0.2em] text-ink-faint">
             Theme
           </p>
@@ -162,7 +156,7 @@ export function ThemeSwitcher() {
             ))}
           </div>
         </div>
-      ) : null}
+      </Popover>
     </div>
   );
 }

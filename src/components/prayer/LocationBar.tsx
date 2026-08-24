@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+
+import { Popover } from "@/components/ui/Popover";
 
 import { searchCities, type City } from "@/data/cities";
 import {
@@ -21,27 +23,12 @@ export function LocationBar({ location, onChange }: LocationBarProps) {
   const [query, setQuery] = useState("");
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Derived from the query, so it is computed during render rather than
   // mirrored into state by an effect.
   const results = useMemo(() => searchCities(query), [query]);
 
-  useEffect(() => {
-    if (!open) return;
-    function onPointerDown(event: MouseEvent) {
-      if (!panelRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
 
   async function useDeviceLocation() {
     setLocating(true);
@@ -82,8 +69,9 @@ export function LocationBar({ location, onChange }: LocationBarProps) {
   }
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -107,8 +95,16 @@ export function LocationBar({ location, onChange }: LocationBarProps) {
         </span>
       </button>
 
-      {open ? (
-        <div className="hd-fade-up absolute left-1/2 top-12 z-40 w-[19rem] -translate-x-1/2 rounded-[14px] border border-line bg-surface-1 p-3">
+      <Popover
+        open={open}
+        onClose={() => setOpen(false)}
+        anchorRef={triggerRef}
+        align="center"
+        width={304}
+        ariaLabel="Choose a location"
+        className="p-3"
+      >
+        <div>
           <button
             type="button"
             onClick={useDeviceLocation}
@@ -172,7 +168,7 @@ export function LocationBar({ location, onChange }: LocationBarProps) {
             </p>
           ) : null}
         </div>
-      ) : null}
+      </Popover>
     </div>
   );
 }

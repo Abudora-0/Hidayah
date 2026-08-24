@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
+import { Popover } from "./Popover";
+
 export type SelectOption = {
   value: string;
   label: string;
@@ -23,6 +25,10 @@ type SelectProps = {
  * A themed listbox replacing the native select, which cannot be styled to
  * match the rest of the interface. Keyboard behaviour follows the listbox
  * pattern: arrows move, Home and End jump, Enter commits, Escape closes.
+ *
+ * The panel is portalled through Popover so it is never trapped by a parent
+ * stacking context or clipped by an overflow, and so it flips upward when
+ * opened near the bottom of the screen.
  */
 export function Select({
   value,
@@ -35,7 +41,7 @@ export function Select({
   const [activeIndex, setActiveIndex] = useState(() =>
     Math.max(0, options.findIndex((option) => option.value === value)),
   );
-  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
 
@@ -53,16 +59,6 @@ export function Select({
     },
     [onChange, options],
   );
-
-  useEffect(() => {
-    if (!open) return;
-
-    function onPointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) close();
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [open, close]);
 
   useEffect(() => {
     if (!open) return;
@@ -110,8 +106,9 @@ export function Select({
   }
 
   return (
-    <div className={`relative ${className ?? ""}`} ref={rootRef}>
+    <div className={`relative ${className ?? ""}`}>
       <button
+        ref={triggerRef}
         type="button"
         role="combobox"
         aria-expanded={open}
@@ -153,15 +150,16 @@ export function Select({
         </svg>
       </button>
 
-      {open ? (
-        <ul
-          id={listId}
-          role="listbox"
-          aria-label={label}
-          ref={listRef}
-          tabIndex={-1}
-          className="hd-fade-up absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-72 overflow-y-auto rounded-[12px] border border-line bg-surface-1 p-1.5"
-        >
+      <Popover
+        open={open}
+        onClose={close}
+        anchorRef={triggerRef}
+        role="listbox"
+        id={listId}
+        ariaLabel={label}
+        className="p-1.5"
+      >
+        <ul ref={listRef}>
           {options.map((option, index) => {
             const isSelected = option.value === value;
             return (
@@ -219,7 +217,7 @@ export function Select({
             );
           })}
         </ul>
-      ) : null}
+      </Popover>
     </div>
   );
 }

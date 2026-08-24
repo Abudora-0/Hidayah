@@ -141,8 +141,19 @@
 }
 
 html {
-  scroll-behavior: smooth;
   color-scheme: dark;
+
+  /* Reserve the scrollbar track at all times. Without this the page reflows
+     by the width of the scrollbar whenever content crosses the viewport
+     height, which reads as the layout shifting sideways. */
+  scrollbar-gutter: stable;
+}
+
+/* Smooth scrolling is opt in rather than global. Applied to html it animates
+   every wheel gesture, which makes ordinary scrolling feel elastic and
+   laggy. Only in page jumps, such as moving to an ayah, want it. */
+[data-smooth-scroll] {
+  scroll-behavior: smooth;
 }
 
 [data-mode="light"] {
@@ -182,6 +193,14 @@ body {
   height: 11px;
 }
 
+/* Chrome draws stepper arrows at both ends of the track by default. Only the
+   bar itself is wanted. */
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 ::-webkit-scrollbar-track {
   background: color-mix(in srgb, var(--s2) 70%, transparent);
 }
@@ -206,6 +225,22 @@ body {
 
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/* ==========================================================================
+   Stacking order
+
+   One documented scale, so layers are not argued about per component. Popovers
+   sit above the header because they are opened from it, and drawers sit above
+   everything because they are modal.
+   ========================================================================== */
+
+@theme inline {
+  --z-index-header: 30;
+  --z-index-player: 40;
+  --z-index-popover: 60;
+  --z-index-scrim: 70;
+  --z-index-drawer: 80;
 }
 
 /* ==========================================================================
@@ -534,9 +569,21 @@ select:hover {
     border-color 0.3s ease, background-color 0.3s ease;
 }
 
+/* No transform here. A transform creates a stacking context, which traps any
+   popover opened inside the card so that later siblings paint over it. The
+   colour shift alone reads the same. Cards that never contain a popover can
+   add .hd-lift for the movement. */
 .hd-card:hover {
-  transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
+  background-color: color-mix(in srgb, var(--gold) 4%, var(--s1));
+}
+
+.hd-lift {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hd-lift:hover {
+  transform: translateY(-3px);
 }
 
 /* Respect the user. Every animation above collapses to nothing. */

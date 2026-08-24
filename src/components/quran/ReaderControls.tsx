@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { Counter } from "@/components/ui/Counter";
+import { Popover } from "@/components/ui/Popover";
 import { Select } from "@/components/ui/Select";
 import { Toggle } from "@/components/ui/Toggle";
 import { ENGLISH_EDITIONS, URDU_EDITIONS } from "@/data/editions";
@@ -10,23 +11,8 @@ import { updateSettings, type Settings } from "@/lib/settings";
 
 export function ReaderControls({ settings }: { settings: Settings }) {
   const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function onPointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
 
   const patchQuran = (patch: Partial<Settings["quran"]>) =>
     updateSettings((current) => ({
@@ -35,8 +21,9 @@ export function ReaderControls({ settings }: { settings: Settings }) {
     }));
 
   return (
-    <div className="relative" ref={rootRef}>
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -48,8 +35,16 @@ export function ReaderControls({ settings }: { settings: Settings }) {
         Display
       </button>
 
-      {open ? (
-        <div className="hd-fade-up absolute right-0 top-12 z-50 w-[21rem] rounded-[14px] border border-line bg-surface-1 p-4">
+      <Popover
+        open={open}
+        onClose={() => setOpen(false)}
+        anchorRef={triggerRef}
+        align="end"
+        width={336}
+        ariaLabel="Display options"
+        className="p-4"
+      >
+        <div>
           <p className="text-[0.62rem] uppercase tracking-[0.26em] text-ink-faint">
             Reading size
           </p>
@@ -128,7 +123,7 @@ export function ReaderControls({ settings }: { settings: Settings }) {
             ) : null}
           </div>
         </div>
-      ) : null}
+      </Popover>
     </div>
   );
 }

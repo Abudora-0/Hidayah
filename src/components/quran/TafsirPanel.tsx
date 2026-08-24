@@ -113,7 +113,7 @@ export function TafsirPanel({
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px]"
+        className="fixed inset-0 z-scrim bg-black/50"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -122,7 +122,7 @@ export function TafsirPanel({
         role="dialog"
         aria-modal="true"
         aria-label={`Tafsir for ${surahName} ayah ${ayahNumber}`}
-        className="hd-fade-up fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-line bg-surface-1"
+        className="hd-fade-up fixed inset-y-0 right-0 z-drawer flex w-full max-w-lg flex-col border-l border-line bg-surface-1"
       >
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
           <div className="min-w-0">

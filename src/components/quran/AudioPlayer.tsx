@@ -52,7 +52,7 @@ export function AudioPlayer({
   const fraction = duration > 0 ? progress / duration : 0;
 
   return (
-    <div className="hd-fade-up fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface-1/95 backdrop-blur-xl">
+    <div className="hd-fade-up fixed inset-x-0 bottom-0 z-player border-t border-line bg-surface-1">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
           <button
