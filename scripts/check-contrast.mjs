@@ -74,6 +74,12 @@ for (const [, theme, mode, body] of blocks) {
     ["ink-dim on s2", v["--ink-dim"], v["--s2"], AA, "text"],
     ["ink-faint on s1", v["--ink-faint"], v["--s1"], AA, "text"],
     ["ink-faint on s0", v["--ink-faint"], v["--s0"], AA, "text"],
+    // The page itself is painted with --ground, not --s0, so the body text
+    // pairings have to be checked against that too.
+    ["ink on ground", v["--ink"], v["--ground"], AA, "text"],
+    ["ink-dim on ground", v["--ink-dim"], v["--ground"], AA, "text"],
+    ["ink-faint on ground", v["--ink-faint"], v["--ground"], AA, "text"],
+    ["gold-ink on ground", v["--gold-ink"], v["--ground"], AA, "text"],
     ["gold-ink on s1", v["--gold-ink"], v["--s1"], AA, "text"],
     ["gold on s1 (UI)", v["--gold"], v["--s1"], AA_UI, "ui"],
     ["on-gold text on gold", v["--on-gold"], v["--gold"], AA, "text"],

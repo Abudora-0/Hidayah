@@ -11,8 +11,7 @@
 
 :root,
 [data-theme="emerald"][data-mode="dark"] {
-  --glow: #0e3a2c;
-  --deep: #0a2a20;
+  --ground: #0a2a20;
   --panel-top: #134034;
   --s0: #051a15;
   --s1: #06231c;
@@ -21,7 +20,7 @@
   --line-strong: #2d7961;
   --ink: #eaf3ee;
   --ink-dim: #8fb6a5;
-  --ink-faint: #64917e;
+  --ink-faint: #6a9784;
   --gold: #d4af37;
   --gold-soft: #e9d08a;
   --gold-ink: #e9d08a;
@@ -29,8 +28,7 @@
 }
 
 [data-theme="emerald"][data-mode="light"] {
-  --glow: #fffdf6;
-  --deep: #efe8d6;
+  --ground: #f4efe3;
   --panel-top: #f7f2e4;
   --s0: #f2ede0;
   --s1: #fffdf6;
@@ -47,8 +45,7 @@
 }
 
 [data-theme="lapis"][data-mode="dark"] {
-  --glow: #123a5c;
-  --deep: #0d2440;
+  --ground: #0d2440;
   --panel-top: #16324e;
   --s0: #08131f;
   --s1: #0b1a2f;
@@ -57,7 +54,7 @@
   --line-strong: #416c96;
   --ink: #f2e8d5;
   --ink-dim: #93a7be;
-  --ink-faint: #6c88a4;
+  --ink-faint: #7490ac;
   --gold: #c9a227;
   --gold-soft: #e8ce85;
   --gold-ink: #e8ce85;
@@ -65,8 +62,7 @@
 }
 
 [data-theme="lapis"][data-mode="light"] {
-  --glow: #fffbf2;
-  --deep: #ece3d0;
+  --ground: #f3ecdf;
   --panel-top: #f5eee0;
   --s0: #f1eade;
   --s1: #fffbf2;
@@ -83,8 +79,7 @@
 }
 
 [data-theme="ink"][data-mode="dark"] {
-  --glow: #26241f;
-  --deep: #171614;
+  --ground: #171614;
   --panel-top: #2a2722;
   --s0: #0b0b0b;
   --s1: #121212;
@@ -101,8 +96,7 @@
 }
 
 [data-theme="ink"][data-mode="light"] {
-  --glow: #ffffff;
-  --deep: #f0ebe1;
+  --ground: #f7f4ee;
   --panel-top: #f8f5ef;
   --s0: #f5f2ec;
   --s1: #ffffff;
@@ -202,9 +196,18 @@ body {
    Themed scrollbar
    ========================================================================== */
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold) transparent;
+/* Firefox only.
+ *
+ * Chrome supports both the standard properties and the ::-webkit-scrollbar
+ * pseudo elements, but if the standard ones are set it switches to the
+ * standard scrollbar and ignores every pseudo element rule below, which
+ * brought the stepper arrows back. Firefox has no pseudo elements, so it is
+ * the one that needs these, and it draws no arrows anyway. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -612,15 +615,11 @@ select:hover {
 
 /* The page ground. A soft pool of light near the top, fading into the deeper
    tone, so the surface has a light source rather than one flat value. */
+/* One flat tone. This carried a wash from a darker value into a lighter one,
+   which read as a visible band across the page rather than as depth. The
+   lighter of the two is kept. */
 .hd-ground {
-  background:
-    radial-gradient(
-      120% 62% at 50% -8%,
-      color-mix(in srgb, var(--glow) 60%, transparent) 0%,
-      transparent 62%
-    ),
-    linear-gradient(180deg, var(--s0) 0%, var(--deep) 100%);
-  background-attachment: scroll;
+  background-color: var(--ground);
 }
 
 /* A panel that catches light along its upper edge. */
