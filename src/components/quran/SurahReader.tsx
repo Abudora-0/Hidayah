@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { GirihRule } from "@/components/ornament/GirihRule";
 import { SurahOpening } from "@/components/ornament/SurahOpening";
@@ -13,6 +13,7 @@ import { ReaderControls } from "./ReaderControls";
 import { ReaderPager } from "./ReaderPager";
 import { TafsirPanel } from "./TafsirPanel";
 import { updateSettings, useSettings } from "@/lib/settings";
+import { useLanguage } from "@/lib/i18n";
 import {
   isBookmarked,
   setLastRead,
@@ -20,7 +21,8 @@ import {
   useReading,
 } from "@/lib/reading";
 import { PAGE_SIZE, useAyahPagination } from "@/lib/pagination";
-import { ayahAudioUrl, type Ayah, type Surah } from "@/lib/quran";
+import { useRecitation } from "@/lib/recitation";
+import { type Ayah, type Surah } from "@/lib/quran";
 
 type SurahReaderProps = {
   surah: Surah;
@@ -53,19 +55,12 @@ export function SurahReader({
   previous,
   next,
 }: SurahReaderProps) {
+  const { t } = useLanguage();
   const settings = useSettings();
+  const reading = useReading();
   const [extra, setExtra] = useState<ExtraTranslations>({});
-  const [activeAyah, setActiveAyah] = useState<number | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [playerOpen, setPlayerOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [repeat, setRepeat] = useState(false);
   const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
   const [sheetAyah, setSheetAyah] = useState<Ayah | null>(null);
-  const reading = useReading();
-
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   const { englishEdition, urduEdition, showEnglish, showUrdu, readingMode } =
     settings.quran;
@@ -126,7 +121,7 @@ export function SurahReader({
     });
   }, [surah.ayahs, extra]);
 
-  // Ayahs are numbered from one within a surah, so the anchor maps straight
+  // Ayahs are numbered from one within a surah, so an anchor maps straight
   // onto an index.
   const findIndexForAnchor = useCallback(
     (ayahNumber: number) => ayahNumber - 1,
@@ -135,72 +130,59 @@ export function SurahReader({
 
   const pageSize = mushaf ? PAGE_SIZE.mushaf : PAGE_SIZE.study;
   const paged = useAyahPagination(ayahs, pageSize, findIndexForAnchor);
+  const goToIndex = paged.goToIndex;
 
-  const playAyah = useCallback(
-    (numberInSurah: number) => {
-      setActiveAyah(numberInSurah);
-      setPlayerOpen(true);
-      setPlaying(true);
-    },
-    [],
+  const globalNumberAt = useCallback(
+    (position: number) => ayahs[position]?.globalNumber,
+    [ayahs],
   );
 
-  const currentAyah = activeAyah
-    ? ayahs.find((a) => a.numberInSurah === activeAyah)
-    : null;
+  // Recitation runs across the whole surah and the page follows it, so a
+  // reading that crosses a page boundary keeps going.
+  const onIndexChange = useCallback(
+    (position: number) => {
+      goToIndex(position);
+    },
+    [goToIndex],
+  );
 
-  const src = currentAyah
-    ? ayahAudioUrl(settings.quran.reciter, currentAyah.globalNumber)
-    : undefined;
+  const {
+    audioRef,
+    seekRef,
+    elapsedRef,
+    index: playingIndex,
+    playing,
+    visible: playerVisible,
+    duration,
+    rate,
+    repeat,
+    setRate,
+    setRepeat,
+    playAt,
+    goTo,
+    toggle: togglePlay,
+    seek,
+    close: closePlayer,
+    onEnded,
+    onDurationChange,
+    onTimeUpdate,
+    onPlay,
+  } = useRecitation({
+    count: ayahs.length,
+    globalNumberAt,
+    reciterId: settings.quran.reciter,
+    onIndexChange,
+  });
 
-  // Whether playback should continue into the next track, read without making
-  // the loader depend on it.
-  const playingRef = useRef(playing);
-  useEffect(() => {
-    playingRef.current = playing;
-  }, [playing]);
+  const activeAyah =
+    playingIndex === null
+      ? null
+      : (ayahs[playingIndex]?.numberInSurah ?? null);
 
-  // True while the source is being swapped for the next ayah.
-  //
-  // Calling load() on a media element fires a pause event. With the pause
-  // handler mirroring that into state, every ayah that finished immediately
-  // set playing to false and stopped the recitation, which is why playback
-  // never carried on to the next ayah by itself.
-  const switchingRef = useRef(false);
-
-  // Load only when the track itself changes. Depending on `playing` here as
-  // well meant pausing and resuming reassigned the source and restarted the
-  // ayah instead of continuing it.
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !src) return;
-
-    switchingRef.current = true;
-    audio.src = src;
-    audio.load();
-
-    if (!playingRef.current) {
-      switchingRef.current = false;
-      return;
-    }
-
-    audio
-      .play()
-      .then(() => {
-        switchingRef.current = false;
-      })
-      .catch(() => {
-        switchingRef.current = false;
-        setPlaying(false);
-      });
-  }, [src]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (playing) audio.play().catch(() => setPlaying(false));
-    else audio.pause();
-  }, [playing]);
+  const playAyah = useCallback(
+    (numberInSurah: number) => playAt(numberInSurah - 1),
+    [playAt],
+  );
 
   // Keep the recited ayah in view without yanking the page around.
   useEffect(() => {
@@ -208,26 +190,6 @@ export function SurahReader({
     const node = document.getElementById(`ayah-${activeAyah}`);
     node?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [activeAyah, playing, paged.page]);
-
-  function onEnded() {
-    if (repeat) {
-      const audio = audioRef.current;
-      if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => setPlaying(false));
-      }
-      return;
-    }
-    // Continuous recitation through to the end of the surah. The page has to
-    // follow, or the next ayah is not on screen to highlight or scroll to.
-    if (activeAyah !== null && activeAyah < surah.ayahCount) {
-      const next = activeAyah + 1;
-      setActiveAyah(next);
-      paged.goToIndex(next - 1);
-    } else {
-      setPlaying(false);
-    }
-  }
 
   // Record where the reader has got to, so the resume card can offer it back.
   // The topmost ayah intersecting the viewport is the one being read.
@@ -257,14 +219,13 @@ export function SurahReader({
 
     for (const node of nodes) observer.observe(node);
     return () => observer.disconnect();
-  }, [surah.number, surah.englishName, mushaf, ayahs.length]);
+  }, [surah.number, surah.englishName, mushaf, ayahs.length, paged.page]);
 
-  function seek(fraction: number) {
-    const audio = audioRef.current;
-    if (!audio || !Number.isFinite(audio.duration)) return;
-    audio.currentTime = audio.duration * fraction;
-    setProgress(audio.currentTime);
-  }
+  const rangeLabel = t("reader.pageRange", {
+    from: paged.offset + 1,
+    to: Math.min(paged.offset + pageSize, ayahs.length),
+    total: ayahs.length,
+  });
 
   return (
     <div className="relative">
@@ -283,7 +244,7 @@ export function SurahReader({
                 strokeLinejoin="round"
               />
             </svg>
-            All surahs
+            {t("quran.allSurahs")}
           </Link>
 
           <ReaderControls settings={settings} />
@@ -308,7 +269,7 @@ export function SurahReader({
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
               <path d="M8 5.5v13l11-6.5z" />
             </svg>
-            Recite this surah
+            {t("quran.reciteSurah")}
           </button>
         </div>
 
@@ -318,44 +279,43 @@ export function SurahReader({
           page={paged.page}
           pageCount={paged.pageCount}
           onPage={paged.setPage}
-          rangeLabel={`Ayahs ${paged.offset + 1} to ${Math.min(paged.offset + pageSize, surah.ayahCount)} of ${surah.ayahCount}`}
+          rangeLabel={rangeLabel}
         />
 
         <div className="mt-8">
-        {mushaf ? (
-          <MushafView
-            ayahs={paged.items}
-            arabicSize={settings.quran.arabicSize}
-            activeAyah={
-              activeAyah
-                ? (ayahs.find((a) => a.numberInSurah === activeAyah)
-                    ?.globalNumber ?? null)
-                : null
-            }
-            onSelect={(ayah) => setSheetAyah(ayah as Ayah)}
-          />
-        ) : (
-        <div className="flex flex-col gap-2">
-          {paged.items.map((ayah) => (
-            <AyahRow
-              key={ayah.numberInSurah}
-              ayah={ayah}
-              surahNumber={surah.number}
+          {mushaf ? (
+            <MushafView
+              ayahs={paged.items}
               arabicSize={settings.quran.arabicSize}
-              englishEdition={englishEdition}
-              urduEdition={urduEdition}
-              showEnglish={showEnglish}
-              showUrdu={showUrdu}
-              isPlaying={playing && activeAyah === ayah.numberInSurah}
-              onPlay={() => {
-                if (activeAyah === ayah.numberInSurah) setPlaying((p) => !p);
-                else playAyah(ayah.numberInSurah);
-              }}
-              onTafsir={() => setTafsirAyah(ayah.numberInSurah)}
+              activeAyah={
+                playingIndex === null
+                  ? null
+                  : (ayahs[playingIndex]?.globalNumber ?? null)
+              }
+              onSelect={(ayah) => setSheetAyah(ayah as Ayah)}
             />
-          ))}
-        </div>
-        )}
+          ) : (
+            <div className="flex flex-col gap-2">
+              {paged.items.map((ayah) => (
+                <AyahRow
+                  key={ayah.numberInSurah}
+                  ayah={ayah}
+                  surahNumber={surah.number}
+                  arabicSize={settings.quran.arabicSize}
+                  englishEdition={englishEdition}
+                  urduEdition={urduEdition}
+                  showEnglish={showEnglish}
+                  showUrdu={showUrdu}
+                  isPlaying={playing && activeAyah === ayah.numberInSurah}
+                  onPlay={() => {
+                    if (activeAyah === ayah.numberInSurah) togglePlay();
+                    else playAyah(ayah.numberInSurah);
+                  }}
+                  onTafsir={() => setTafsirAyah(ayah.numberInSurah)}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <GirihRule className="my-10" />
@@ -364,7 +324,7 @@ export function SurahReader({
           page={paged.page}
           pageCount={paged.pageCount}
           onPage={paged.setPage}
-          rangeLabel={`Ayahs ${paged.offset + 1} to ${Math.min(paged.offset + pageSize, surah.ayahCount)} of ${surah.ayahCount}`}
+          rangeLabel={rangeLabel}
         />
 
         <GirihRule className="my-10" />
@@ -380,7 +340,7 @@ export function SurahReader({
               </svg>
               <span className="min-w-0">
                 <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-ink-faint">
-                  Previous
+                  {t("quran.previous")}
                 </span>
                 <span className="block truncate font-kufi text-sm text-ink">
                   {previous.name}
@@ -398,7 +358,7 @@ export function SurahReader({
             >
               <span className="min-w-0">
                 <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-ink-faint">
-                  Next
+                  {t("quran.next")}
                 </span>
                 <span className="block truncate font-kufi text-sm text-ink">
                   {next.name}
@@ -416,40 +376,31 @@ export function SurahReader({
 
       <audio
         ref={audioRef}
-        preload="none"
-        onTimeUpdate={(event) => setProgress(event.currentTarget.currentTime)}
-        onDurationChange={(event) => setDuration(event.currentTarget.duration)}
+        preload="auto"
         onEnded={onEnded}
-        onPlay={() => setPlaying(true)}
-        // Ignored while the source is being swapped, since load() fires a
-        // pause that does not mean the listener stopped anything. A pause from
-        // the operating system media keys still registers.
-        onPause={() => {
-          if (!switchingRef.current) setPlaying(false);
-        }}
+        onPlay={onPlay}
+        onTimeUpdate={onTimeUpdate}
+        onDurationChange={(event) =>
+          onDurationChange(event.currentTarget.duration)
+        }
       />
 
       <AudioPlayer
-        visible={playerOpen}
+        visible={playerVisible}
         playing={playing}
-        ayahNumber={activeAyah ?? 1}
-        ayahCount={surah.ayahCount}
+        ayahLabel={`${t("quran.ayah")} ${activeAyah ?? 1}`}
         surahName={surah.englishName}
         reciterId={settings.quran.reciter}
-        progress={progress}
         duration={duration}
         repeat={repeat}
-        onToggle={() => setPlaying((p) => !p)}
-        onPrevious={() => {
-          const next = Math.max(1, (activeAyah ?? 1) - 1);
-          setActiveAyah(next);
-          paged.goToIndex(next - 1);
-        }}
-        onNext={() => {
-          const next = Math.min(surah.ayahCount, (activeAyah ?? 1) + 1);
-          setActiveAyah(next);
-          paged.goToIndex(next - 1);
-        }}
+        rate={rate}
+        atStart={(playingIndex ?? 0) <= 0}
+        atEnd={(playingIndex ?? 0) >= ayahs.length - 1}
+        seekRef={seekRef}
+        elapsedRef={elapsedRef}
+        onToggle={togglePlay}
+        onPrevious={() => goTo((playingIndex ?? 0) - 1)}
+        onNext={() => goTo((playingIndex ?? 0) + 1)}
         onSeek={seek}
         onReciter={(id) =>
           updateSettings((current) => ({
@@ -458,10 +409,8 @@ export function SurahReader({
           }))
         }
         onRepeat={setRepeat}
-        onClose={() => {
-          setPlaying(false);
-          setPlayerOpen(false);
-        }}
+        onRate={setRate}
+        onClose={closePlayer}
       />
 
       <AyahSheet
@@ -478,7 +427,7 @@ export function SurahReader({
         }
         onPlay={() => {
           if (!sheetAyah) return;
-          if (activeAyah === sheetAyah.numberInSurah) setPlaying((p) => !p);
+          if (activeAyah === sheetAyah.numberInSurah) togglePlay();
           else playAyah(sheetAyah.numberInSurah);
         }}
         onTafsir={() => {

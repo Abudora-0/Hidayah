@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { GirihRule } from "@/components/ornament/GirihRule";
 import { AudioPlayer } from "./AudioPlayer";
@@ -12,9 +12,11 @@ import { ReaderControls } from "./ReaderControls";
 import { ReaderPager } from "./ReaderPager";
 import { TafsirPanel } from "./TafsirPanel";
 import { updateSettings, useSettings } from "@/lib/settings";
+import { useLanguage } from "@/lib/i18n";
 import { isBookmarked, setLastRead, toggleBookmark, useReading } from "@/lib/reading";
 import { PAGE_SIZE, useAyahPagination } from "@/lib/pagination";
-import { ayahAudioUrl, type Juz, type JuzAyah } from "@/lib/quran";
+import { useRecitation } from "@/lib/recitation";
+import { type Juz, type JuzAyah } from "@/lib/quran";
 
 const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 
@@ -32,18 +34,11 @@ type JuzReaderProps = {
  * and audio has to walk the flat list rather than count up to a surah length.
  */
 export function JuzReader({ juz, previous, next }: JuzReaderProps) {
+  const { t } = useLanguage();
   const settings = useSettings();
   const reading = useReading();
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [playerOpen, setPlayerOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [repeat, setRepeat] = useState(false);
   const [sheetAyah, setSheetAyah] = useState<JuzAyah | null>(null);
   const [tafsir, setTafsir] = useState<JuzAyah | null>(null);
-
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   const { englishEdition, urduEdition, showEnglish, showUrdu, readingMode } =
     settings.quran;
@@ -61,67 +56,57 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
   const pageSize = mushaf ? PAGE_SIZE.mushaf : PAGE_SIZE.study;
   const paged = useAyahPagination(juz.ayahs, pageSize, findIndexForAnchor);
 
+  const goToIndex = paged.goToIndex;
+
+  const globalNumberAt = useCallback(
+    (position: number) => juz.ayahs[position]?.globalNumber,
+    [juz.ayahs],
+  );
+
+  const onIndexChange = useCallback(
+    (position: number) => {
+      goToIndex(position);
+    },
+    [goToIndex],
+  );
+
+  // The whole para plays straight through, and the page follows the reciting.
+  const {
+    audioRef,
+    seekRef,
+    elapsedRef,
+    index: playingIndex,
+    playing,
+    visible: playerVisible,
+    duration,
+    rate,
+    repeat,
+    setRate,
+    setRepeat,
+    playAt,
+    goTo,
+    toggle: togglePlay,
+    seek,
+    close: closePlayer,
+    onEnded,
+    onDurationChange,
+    onTimeUpdate,
+    onPlay,
+  } = useRecitation({
+    count: juz.ayahs.length,
+    globalNumberAt,
+    reciterId: settings.quran.reciter,
+    onIndexChange,
+  });
+
+  const activeIndex = playingIndex;
   const current = activeIndex !== null ? juz.ayahs[activeIndex] : null;
-  const src = current
-    ? ayahAudioUrl(settings.quran.reciter, current.globalNumber)
-    : undefined;
 
-  const playAt = useCallback((index: number) => {
-    setActiveIndex(index);
-    setPlayerOpen(true);
-    setPlaying(true);
-  }, []);
-
-  const playingRef = useRef(playing);
-  useEffect(() => {
-    playingRef.current = playing;
-  }, [playing]);
-
-  // True while the source is being swapped for the next ayah.
-  //
-  // Calling load() on a media element fires a pause event. With the pause
-  // handler mirroring that into state, every ayah that finished immediately
-  // set playing to false and stopped the recitation, which is why playback
-  // never carried on to the next ayah by itself.
-  const switchingRef = useRef(false);
-
-  // Load only when the track itself changes. Depending on `playing` here as
-  // well meant pausing and resuming reassigned the source and restarted the
-  // ayah instead of continuing it.
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !src) return;
-
-    switchingRef.current = true;
-    audio.src = src;
-    audio.load();
-
-    if (!playingRef.current) {
-      switchingRef.current = false;
-      return;
-    }
-
-    audio
-      .play()
-      .then(() => {
-        switchingRef.current = false;
-      })
-      .catch(() => {
-        switchingRef.current = false;
-        setPlaying(false);
-      });
-  }, [src]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (playing) audio.play().catch(() => setPlaying(false));
-    else audio.pause();
-  }, [playing]);
-
+  // Keep the recited ayah on screen.
   useEffect(() => {
     if (activeIndex === null || !playing) return;
     const ayah = juz.ayahs[activeIndex];
+    if (!ayah) return;
     document
       .getElementById(`ayah-${ayah.numberInSurah}`)
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -151,33 +136,7 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
     );
     for (const node of nodes) observer.observe(node);
     return () => observer.disconnect();
-  }, [juz.number, mushaf, juz.ayahs.length]);
-
-  const indexByGlobal = useMemo(() => {
-    const map = new Map<number, number>();
-    juz.ayahs.forEach((ayah, index) => map.set(ayah.globalNumber, index));
-    return map;
-  }, [juz.ayahs]);
-
-  function onEnded() {
-    if (repeat) {
-      const audio = audioRef.current;
-      if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => setPlaying(false));
-      }
-      return;
-    }
-    // The page follows the recitation, so the next ayah is on screen.
-    if (activeIndex !== null && activeIndex < juz.ayahs.length - 1) {
-      const next = activeIndex + 1;
-      setActiveIndex(next);
-      paged.goToIndex(next);
-    } else {
-      setPlaying(false);
-    }
-  }
-
+  }, [juz.number, mushaf, juz.ayahs.length, paged.page]);
   return (
     <div className="relative">
       <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
@@ -282,7 +241,7 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
                   showUrdu={showUrdu}
                   isPlaying={playing && activeIndex === index}
                   onPlay={() => {
-                    if (activeIndex === index) setPlaying((p) => !p);
+                    if (activeIndex === index) togglePlay();
                     else playAt(index);
                   }}
                   onTafsir={() => setTafsir(ayah)}
@@ -334,54 +293,38 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
 
       <audio
         ref={audioRef}
-        preload="none"
-        onTimeUpdate={(e) => setProgress(e.currentTarget.currentTime)}
-        onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+        preload="auto"
         onEnded={onEnded}
-        onPlay={() => setPlaying(true)}
-        // Ignored while the source is being swapped, since load() fires a
-        // pause that does not mean the listener stopped anything. A pause from
-        // the operating system media keys still registers.
-        onPause={() => {
-          if (!switchingRef.current) setPlaying(false);
-        }}
+        onPlay={onPlay}
+        onTimeUpdate={onTimeUpdate}
+        onDurationChange={(event) =>
+          onDurationChange(event.currentTarget.duration)
+        }
       />
 
       <AudioPlayer
-        visible={playerOpen}
+        visible={playerVisible}
         playing={playing}
-        ayahNumber={current?.numberInSurah ?? 1}
-        ayahCount={juz.ayahs.length}
-        surahName={current?.surahEnglishName ?? `Para ${juz.number}`}
+        ayahLabel={`${t("quran.ayah")} ${current?.numberInSurah ?? 1}`}
+        surahName={current?.surahEnglishName ?? `${t("quran.para")} ${juz.number}`}
         reciterId={settings.quran.reciter}
-        progress={progress}
         duration={duration}
         repeat={repeat}
-        onToggle={() => setPlaying((p) => !p)}
-        onPrevious={() => {
-          const next = Math.max(0, (activeIndex ?? 0) - 1);
-          setActiveIndex(next);
-          paged.goToIndex(next);
-        }}
-        onNext={() => {
-          const next = Math.min(juz.ayahs.length - 1, (activeIndex ?? 0) + 1);
-          setActiveIndex(next);
-          paged.goToIndex(next);
-        }}
-        onSeek={(fraction) => {
-          const audio = audioRef.current;
-          if (!audio || !Number.isFinite(audio.duration)) return;
-          audio.currentTime = audio.duration * fraction;
-          setProgress(audio.currentTime);
-        }}
+        rate={rate}
+        atStart={(playingIndex ?? 0) <= 0}
+        atEnd={(playingIndex ?? 0) >= juz.ayahs.length - 1}
+        seekRef={seekRef}
+        elapsedRef={elapsedRef}
+        onToggle={togglePlay}
+        onPrevious={() => goTo((playingIndex ?? 0) - 1)}
+        onNext={() => goTo((playingIndex ?? 0) + 1)}
+        onSeek={seek}
         onReciter={(id) =>
           updateSettings((c) => ({ ...c, quran: { ...c.quran, reciter: id } }))
         }
         onRepeat={setRepeat}
-        onClose={() => {
-          setPlaying(false);
-          setPlayerOpen(false);
-        }}
+        onRate={setRate}
+        onClose={closePlayer}
       />
 
       <AyahSheet
@@ -393,7 +336,9 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
         isPlaying={
           playing &&
           sheetAyah !== null &&
-          activeIndex === indexByGlobal.get(sheetAyah.globalNumber)
+          activeIndex === juz.ayahs.findIndex(
+            (a) => a.globalNumber === sheetAyah.globalNumber,
+          )
         }
         isBookmarked={
           sheetAyah
@@ -402,9 +347,11 @@ export function JuzReader({ juz, previous, next }: JuzReaderProps) {
         }
         onPlay={() => {
           if (!sheetAyah) return;
-          const index = indexByGlobal.get(sheetAyah.globalNumber);
-          if (index === undefined) return;
-          if (activeIndex === index) setPlaying((p) => !p);
+          const index = juz.ayahs.findIndex(
+            (a) => a.globalNumber === sheetAyah.globalNumber,
+          );
+          if (index < 0) return;
+          if (activeIndex === index) togglePlay();
           else playAt(index);
         }}
         onTafsir={() => {

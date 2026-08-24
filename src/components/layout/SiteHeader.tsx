@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { Wordmark } from "@/components/ornament/Wordmark";
 import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
+import { LanguageToggle } from "@/components/ui/LanguageToggle";
 import { useLanguage } from "@/lib/i18n";
 
 const NAV = [
@@ -79,6 +80,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <LanguageToggle />
           <ThemeSwitcher />
 
           <button

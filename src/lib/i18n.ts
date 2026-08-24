@@ -80,6 +80,7 @@ const UR: Record<string, string> = {
   "quran.surahCount": "{count} سورتیں",
   "quran.nothingMatches": "اس تلاش سے کچھ نہیں ملا۔",
   "quran.ayahs": "آیات",
+  "quran.ayah": "آیت",
   "quran.allSurahs": "تمام سورتیں",
   "quran.allParas": "تمام پارے",
   "quran.reciteSurah": "یہ سورت سنیں",
@@ -109,6 +110,9 @@ const UR: Record<string, string> = {
   "reader.pageRange": "{from} تا {to} از {total} آیات",
   "reader.previousPage": "پچھلا صفحہ",
   "reader.nextPage": "اگلا صفحہ",
+  "reader.speed": "رفتار",
+  "reader.repeat": "یہی آیت دہرائیں",
+  "reader.seek": "آیت میں آگے پیچھے",
 
   // Ayah actions
   "ayah.play": "یہ آیت سنیں",
@@ -245,6 +249,7 @@ const EN: Record<string, string> = {
   "quran.surahCount": "{count} surahs",
   "quran.nothingMatches": "Nothing matches that search.",
   "quran.ayahs": "ayahs",
+  "quran.ayah": "ayah",
   "quran.allSurahs": "All surahs",
   "quran.allParas": "All paras",
   "quran.reciteSurah": "Recite this surah",
@@ -273,6 +278,9 @@ const EN: Record<string, string> = {
   "reader.pageRange": "Ayahs {from} to {to} of {total}",
   "reader.previousPage": "Previous page",
   "reader.nextPage": "Next page",
+  "reader.speed": "Playback speed",
+  "reader.repeat": "Repeat this ayah",
+  "reader.seek": "Seek within this ayah",
 
   "ayah.play": "Play this ayah",
   "ayah.playing": "Playing this ayah",

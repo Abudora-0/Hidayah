@@ -2,54 +2,67 @@
 
 import { Select } from "@/components/ui/Select";
 import { RECITERS, findReciter } from "@/data/editions";
+import { useLanguage } from "@/lib/i18n";
+import {
+  PLAYBACK_RATES,
+  formatSeconds,
+  type PlaybackRate,
+} from "@/lib/recitation";
 
 type AudioPlayerProps = {
   visible: boolean;
   playing: boolean;
-  ayahNumber: number;
-  ayahCount: number;
+  ayahLabel: string;
   surahName: string;
   reciterId: string;
-  progress: number;
   duration: number;
   repeat: boolean;
+  rate: PlaybackRate;
+  atStart: boolean;
+  atEnd: boolean;
+  /** Written to directly each frame, so the bar moves without re-rendering. */
+  seekRef: React.RefObject<HTMLInputElement | null>;
+  elapsedRef: React.RefObject<HTMLSpanElement | null>;
   onToggle: () => void;
   onPrevious: () => void;
   onNext: () => void;
   onSeek: (fraction: number) => void;
   onReciter: (id: string) => void;
   onRepeat: (next: boolean) => void;
+  onRate: (rate: PlaybackRate) => void;
   onClose: () => void;
 };
-
-function formatSeconds(value: number) {
-  if (!Number.isFinite(value)) return "0:00";
-  const minutes = Math.floor(value / 60);
-  const seconds = Math.floor(value % 60);
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
 
 export function AudioPlayer({
   visible,
   playing,
-  ayahNumber,
-  ayahCount,
+  ayahLabel,
   surahName,
   reciterId,
-  progress,
   duration,
   repeat,
+  rate,
+  atStart,
+  atEnd,
+  seekRef,
+  elapsedRef,
   onToggle,
   onPrevious,
   onNext,
   onSeek,
   onReciter,
   onRepeat,
+  onRate,
   onClose,
 }: AudioPlayerProps) {
+  const { t } = useLanguage();
+
   if (!visible) return null;
 
-  const fraction = duration > 0 ? progress / duration : 0;
+  function cycleRate() {
+    const at = PLAYBACK_RATES.indexOf(rate);
+    onRate(PLAYBACK_RATES[(at + 1) % PLAYBACK_RATES.length]);
+  }
 
   return (
     <div className="hd-fade-up fixed inset-x-0 bottom-0 z-player border-t border-line bg-surface-1">
@@ -58,8 +71,8 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={onPrevious}
-            disabled={ayahNumber <= 1}
-            aria-label="Previous ayah"
+            disabled={atStart}
+            aria-label={t("quran.previous")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold disabled:opacity-35"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -70,10 +83,10 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={onToggle}
-            aria-label={playing ? "Pause recitation" : "Play recitation"}
+            aria-label={playing ? t("ayah.pause") : t("ayah.play")}
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold bg-gold/15 text-gold transition-all duration-300 hover:bg-gold/25"
           >
-            <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="currentColor" aria-hidden="true">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
               {playing ? (
                 <path d="M8 5h3v14H8zM13 5h3v14h-3z" />
               ) : (
@@ -85,8 +98,8 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={onNext}
-            disabled={ayahNumber >= ayahCount}
-            aria-label="Next ayah"
+            disabled={atEnd}
+            aria-label={t("quran.next")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-ink-dim transition-all duration-300 hover:border-gold hover:text-gold disabled:opacity-35"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -97,19 +110,35 @@ export function AudioPlayer({
           <div className="ml-1 min-w-0 flex-1">
             <p className="truncate font-kufi text-sm text-ink">
               {surahName}
-              <span className="text-ink-faint"> ayah {ayahNumber}</span>
+              <span className="text-ink-faint"> {ayahLabel}</span>
             </p>
             <p className="truncate text-[0.68rem] text-ink-faint">
               {findReciter(reciterId).name}
             </p>
           </div>
 
+          {/* Speed. Cycling through the rates keeps this to one control in a
+              bar that is already crowded on a phone. */}
+          <button
+            type="button"
+            onClick={cycleRate}
+            aria-label={t("reader.speed")}
+            title={t("reader.speed")}
+            className={`h-9 shrink-0 rounded-full border px-3 text-xs tabular-nums transition-all duration-300 ${
+              rate === 1
+                ? "border-line text-ink-dim hover:border-gold hover:text-gold-ink"
+                : "border-gold text-gold-ink"
+            }`}
+          >
+            {rate}x
+          </button>
+
           <button
             type="button"
             onClick={() => onRepeat(!repeat)}
             aria-pressed={repeat}
-            aria-label="Repeat this ayah"
-            title="Repeat this ayah"
+            aria-label={t("reader.repeat")}
+            title={t("reader.repeat")}
             className={`hidden h-9 w-9 shrink-0 place-items-center rounded-full border transition-all duration-300 sm:grid ${
               repeat
                 ? "border-gold text-gold"
@@ -130,7 +159,7 @@ export function AudioPlayer({
           <Select
             value={reciterId}
             onChange={onReciter}
-            label="Choose a reciter"
+            label={t("settings.reciter")}
             className="hidden w-56 shrink-0 lg:block"
             options={RECITERS.map((reciter) => ({
               value: reciter.id,
@@ -143,7 +172,7 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close the player"
+            aria-label={t("ayah.close")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-transparent text-ink-faint transition-all duration-300 hover:border-line hover:text-ink"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
@@ -158,17 +187,20 @@ export function AudioPlayer({
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="w-10 shrink-0 text-right text-[0.66rem] tabular-nums text-ink-faint">
-            {formatSeconds(progress)}
+          <span
+            ref={elapsedRef}
+            className="w-10 shrink-0 text-right text-[0.66rem] tabular-nums text-ink-faint"
+          >
+            0:00
           </span>
           <input
+            ref={seekRef}
             type="range"
             min={0}
             max={1000}
-            value={Math.round(fraction * 1000)}
+            defaultValue={0}
             onChange={(event) => onSeek(Number(event.target.value) / 1000)}
-            aria-label="Seek within this ayah"
-            style={{ ["--range-progress" as string]: `${fraction * 100}%` }}
+            aria-label={t("reader.seek")}
           />
           <span className="w-10 shrink-0 text-[0.66rem] tabular-nums text-ink-faint">
             {formatSeconds(duration)}
