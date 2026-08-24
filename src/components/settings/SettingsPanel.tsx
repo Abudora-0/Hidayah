@@ -76,7 +76,7 @@ function Row({
 }
 
 export function SettingsPanel() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const settings = useSettings();
   const location = useSyncExternalStore(
     locationStore.subscribe,
@@ -172,8 +172,16 @@ export function SettingsPanel() {
           {OBLIGATORY_PRAYERS.map((prayer) => (
             <Row
               key={prayer}
-              label={PRAYER_LABELS[prayer].en}
-              hint={PRAYER_LABELS[prayer].note}
+              label={
+                language === "ur"
+                  ? PRAYER_LABELS[prayer].ur
+                  : PRAYER_LABELS[prayer].en
+              }
+              hint={
+                language === "ur"
+                  ? PRAYER_LABELS[prayer].noteUr
+                  : PRAYER_LABELS[prayer].note
+              }
             >
               <Toggle
                 size="sm"
@@ -187,8 +195,8 @@ export function SettingsPanel() {
           <GirihRule className="my-4" compact />
 
           <Row
-            label="Play a sound"
-            hint="A chime, or your own adhan.mp3 if one is installed"
+            label={t("settings.playSound")}
+            hint={t("settings.playSoundNote")}
           >
             <Toggle
               checked={settings.alarm.playAdhan}

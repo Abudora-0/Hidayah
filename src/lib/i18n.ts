@@ -176,6 +176,7 @@ const UR: Record<string, string> = {
   "settings.alarm": "نماز کا الارم",
   "settings.whichPrayers": "کون سی نمازیں",
   "settings.playSound": "آواز چلائیں",
+  "settings.playSoundNote": "ایک گھنٹی، یا آپ کی اپنی adhan.mp3 اگر نصب ہو",
   "settings.reading": "پڑھائی",
   "settings.arabicSize": "عربی متن کا حجم",
   "settings.showEnglish": "انگریزی ترجمہ دکھائیں",
@@ -339,6 +340,8 @@ const EN: Record<string, string> = {
   "settings.alarm": "Prayer alarm",
   "settings.whichPrayers": "Which prayers",
   "settings.playSound": "Play a sound",
+  "settings.playSoundNote":
+    "A chime, or your own adhan.mp3 if one is installed",
   "settings.reading": "Reading",
   "settings.arabicSize": "Arabic size",
   "settings.showEnglish": "Show English",

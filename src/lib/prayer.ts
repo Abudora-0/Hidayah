@@ -38,14 +38,14 @@ export const PRAYER_ORDER: PrayerKey[] = [
 
 export const PRAYER_LABELS: Record<
   PrayerKey,
-  { en: string; ar: string; ur: string; note: string }
+  { en: string; ar: string; ur: string; note: string; noteUr: string }
 > = {
-  fajr: { en: "Fajr", ar: "الفجر", ur: "فجر", note: "Before sunrise" },
-  sunrise: { en: "Sunrise", ar: "الشروق", ur: "طلوع آفتاب", note: "Not a prayer time" },
-  dhuhr: { en: "Dhuhr", ar: "الظهر", ur: "ظہر", note: "After midday" },
-  asr: { en: "Asr", ar: "العصر", ur: "عصر", note: "Afternoon" },
-  maghrib: { en: "Maghrib", ar: "المغرب", ur: "مغرب", note: "At sunset" },
-  isha: { en: "Isha", ar: "العشاء", ur: "عشاء", note: "Night" },
+  fajr: { en: "Fajr", ar: "الفجر", ur: "فجر", note: "Before sunrise", noteUr: "طلوعِ آفتاب سے پہلے" },
+  sunrise: { en: "Sunrise", ar: "الشروق", ur: "طلوع آفتاب", note: "Not a prayer time", noteUr: "یہ نماز کا وقت نہیں" },
+  dhuhr: { en: "Dhuhr", ar: "الظهر", ur: "ظہر", note: "After midday", noteUr: "زوال کے بعد" },
+  asr: { en: "Asr", ar: "العصر", ur: "عصر", note: "Afternoon", noteUr: "سہ پہر" },
+  maghrib: { en: "Maghrib", ar: "المغرب", ur: "مغرب", note: "At sunset", noteUr: "غروبِ آفتاب پر" },
+  isha: { en: "Isha", ar: "العشاء", ur: "عشاء", note: "Night", noteUr: "رات" },
 };
 
 export type MethodKey =
