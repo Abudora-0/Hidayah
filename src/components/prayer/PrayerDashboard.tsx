@@ -20,6 +20,17 @@ import {
   type PrayerKey,
 } from "@/lib/prayer";
 import { setAlarmForPrayer, useSettings } from "@/lib/settings";
+import { OBLIGATORY_PRAYERS } from "@/lib/prayer";
+import {
+  currentStreak,
+  dayKey,
+  prayedOn,
+  recentDays,
+  togglePrayed,
+  useReading,
+} from "@/lib/reading";
+import { ResumeCard } from "./ResumeCard";
+import { PrayerStreak } from "./PrayerStreak";
 
 export function PrayerDashboard() {
   const settings = useSettings();
@@ -53,6 +64,12 @@ export function PrayerDashboard() {
   const onAlarmChange = useCallback((prayer: PrayerKey, enabled: boolean) => {
     setAlarmForPrayer(prayer, enabled);
   }, []);
+
+  const reading = useReading();
+  const today = dayKey();
+  const prayed = prayedOn(reading, today);
+  const streak = currentStreak(reading, OBLIGATORY_PRAYERS.length);
+  const week = recentDays(reading, 7);
 
   if (!location) {
     return <LocationOnboarding onChange={handleLocationChange} />;
@@ -105,6 +122,8 @@ export function PrayerDashboard() {
           <LocationBar location={location} onChange={handleLocationChange} />
         </div>
 
+        <ResumeCard className="mt-8" />
+
         <GirihRule className="my-10" />
 
         <div className="grid gap-10 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-14">
@@ -121,6 +140,8 @@ export function PrayerDashboard() {
 
           <section aria-label="Prayer times for today">
             <PrayerTimeline
+              prayed={prayed}
+              onTogglePrayed={(prayer) => togglePrayed(prayer)}
               entries={schedule.entries}
               currentKey={schedule.currentKey}
               nextKey={schedule.next.key}
@@ -164,7 +185,19 @@ export function PrayerDashboard() {
             </p>
           </div>
 
-          <div className="hd-card p-6 sm:col-span-2 lg:col-span-1">
+          <div className="hd-card p-6">
+            <h2 className="font-kufi text-sm uppercase tracking-[0.24em] text-ink-faint">
+              Tracker
+            </h2>
+            <PrayerStreak
+              streak={streak}
+              week={week}
+              total={OBLIGATORY_PRAYERS.length}
+              todayCount={prayed.length}
+            />
+          </div>
+
+          <div className="hd-card p-6 sm:col-span-2 lg:col-span-3">
             <h2 className="font-kufi text-sm uppercase tracking-[0.24em] text-ink-faint">
               Calculation
             </h2>

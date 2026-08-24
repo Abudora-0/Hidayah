@@ -9,6 +9,9 @@ import {
 } from "@/lib/prayer";
 
 type PrayerTimelineProps = {
+  /** Prayers already marked as prayed today. */
+  prayed: PrayerKey[];
+  onTogglePrayed: (prayer: PrayerKey) => void;
   entries: PrayerEntry[];
   currentKey: PrayerKey | null;
   nextKey: PrayerKey;
@@ -18,6 +21,8 @@ type PrayerTimelineProps = {
 };
 
 export function PrayerTimeline({
+  prayed,
+  onTogglePrayed,
   entries,
   currentKey,
   nextKey,
@@ -110,14 +115,43 @@ export function PrayerTimeline({
               </span>
 
               {entry.isPrayer ? (
-                <Toggle
-                  size="sm"
-                  checked={alarms[entry.key] ?? false}
-                  onChange={(next) => onAlarmChange(entry.key, next)}
-                  label={`Alarm for ${label.en}`}
-                />
+                <>
+                  <button
+                    type="button"
+                    onClick={() => onTogglePrayed(entry.key)}
+                    aria-pressed={prayed.includes(entry.key)}
+                    aria-label={`Mark ${label.en} as prayed`}
+                    title={
+                      prayed.includes(entry.key)
+                        ? `${label.en} marked as prayed`
+                        : `Mark ${label.en} as prayed`
+                    }
+                    className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border transition-all duration-300 ${
+                      prayed.includes(entry.key)
+                        ? "border-gold bg-gold/15 text-gold"
+                        : "border-line text-ink-faint hover:border-gold hover:text-gold-ink"
+                    }`}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
+                      <path
+                        d="m5 13 4 4L19 7"
+                        stroke="currentColor"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+
+                  <Toggle
+                    size="sm"
+                    checked={alarms[entry.key] ?? false}
+                    onChange={(next) => onAlarmChange(entry.key, next)}
+                    label={`Alarm for ${label.en}`}
+                  />
+                </>
               ) : (
-                <span className="w-[38px]" aria-hidden="true" />
+                <span className="w-[70px]" aria-hidden="true" />
               )}
             </div>
           </li>

@@ -11,6 +11,7 @@ const NAV = [
   { href: "/", label: "Prayer", arabic: "الصلاة" },
   { href: "/quran", label: "Quran", arabic: "القرآن" },
   { href: "/calendar", label: "Calendar", arabic: "التقويم" },
+  { href: "/tasbih", label: "Tasbih", arabic: "تسبيح" },
   { href: "/settings", label: "Settings", arabic: "الإعدادات" },
 ];
 

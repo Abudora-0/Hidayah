@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Wordmark } from "@/components/ornament/Wordmark";
 import { Lattice } from "@/components/ornament/Lattice";
+import { QuranIndexTools } from "@/components/quran/QuranIndexTools";
 import { SurahIndex } from "@/components/quran/SurahIndex";
 import { fetchSurahList } from "@/lib/quran";
 
@@ -38,7 +39,9 @@ export default async function QuranPage({
           </p>
         </header>
 
-        <div className="mt-12">
+        <QuranIndexTools className="mt-10" />
+
+        <div className="mt-10">
           <SurahIndex surahs={surahs} initialView={initialView} />
         </div>
       </div>
