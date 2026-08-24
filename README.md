@@ -53,6 +53,11 @@ full Quran in Arabic, English and Urdu with tafsir and recitation.
 | 🧭 | **Qibla compass** | The bearing to the Kaaba, following your device compass where the browser exposes one. |
 | 🌙 | **Hijri calendar** | A month grid in Hijri and Gregorian together, marking Ramadan, both Eids, Ashura, Laylat al Qadr, Arafah, the white days and more. |
 | 📖 | **The full Quran** | All 114 surahs in the Uthmani script, with ten English and eight Urdu translations. |
+| 📃 | **Two reading modes** | Study lays out each ayah with its translation. Mushaf runs the Arabic together as continuous flowing text the way a printed copy reads, with everything else behind a tap. |
+| 🔖 | **Paras, resume and bookmarks** | Browse and read any of the thirty juz end to end across surah boundaries, pick up where you stopped, and bookmark any ayah. |
+| 🔍 | **Search** | Search across the translations and jump straight to the ayah. |
+| 📿 | **Tasbih** | A dhikr counter with the 33/33/34 cycle, istighfar and salawat, counted and kept between visits. |
+| ✅ | **Prayer tracker** | Mark each prayer as prayed, with a streak and a seven day view. |
 | 📜 | **Tafsir** | Per ayah commentary in English and Urdu, including Ibn Kathir and Bayan ul Quran. |
 | 🎧 | **Recitation** | Seven reciters, per ayah playback, continuous recitation, repeat, and the ayah lighting up as it is recited. |
 | 🎨 | **Three themes** | Emerald, Lapis and Ink, each with a real dark and light variant rather than one washed out copy of the other. |
@@ -221,6 +226,14 @@ inputs, the range slider, checkboxes, radios, the focus ring, text selection,
 and a custom listbox replacing the native `select`. All motion is behind
 `prefers-reduced-motion`.
 
+Dropdowns render through one `Popover` primitive that portals to the body and
+positions itself from the trigger's rectangle. That is not incidental. Any
+ancestor with a transform creates a stacking context that traps a panel
+whatever its z-index, and any ancestor with `overflow: hidden` clips it, so a
+panel rendered in place is at the mercy of its parents. It also flips above the
+trigger when there is no room below, instead of running off the bottom of the
+screen.
+
 ---
 
 ## Data sources
@@ -242,6 +255,10 @@ Hidayah is a client for work done by others, and it is worth naming them.
 ```
 src/
   app/                    routes, API handlers, manifest and icons
+    quran/[surah]         the reader, in study or mushaf mode
+    quran/juz/[juz]       a whole para, across surah boundaries
+    quran/search          search the translations
+    tasbih                the dhikr counter
     api/cron/schedule     the daily enqueue
     api/push/fire         QStash callback that sends one notification
   components/
@@ -250,9 +267,10 @@ src/
     quran/                surah index, reader, audio, tafsir
     calendar/             the Hijri month grid
     settings/             preferences and the Aladhan check
-    ui/                   themed select, toggle, counter, theme switcher
+    tasbih/               the dhikr counter
+    ui/                   popover, themed select, toggle, counter, switcher
   data/                   editions, reciters, occasions, cities
-  lib/                    prayer, hijri, quran, push, theme, settings
+  lib/                    prayer, hijri, quran, push, theme, settings, reading
 scripts/
   check-no-emdash.mjs     lint rule described below
   generate-vapid.mjs      Web Push key generation
