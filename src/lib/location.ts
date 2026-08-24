@@ -165,7 +165,7 @@ export function requestDeviceLocation(): Promise<GeolocationPosition> {
       } else {
         reject(
           new LocationError(
-            "Your location could not be determined.",
+            "Your device could not get a location fix. Check that location services are turned on for this browser, then try again, or search for your city instead.",
             "unavailable",
           ),
         );
