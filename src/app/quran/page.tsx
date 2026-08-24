@@ -11,8 +11,11 @@ export const metadata: Metadata = {
     "All 114 surahs of the Holy Quran in Arabic with English and Urdu translation, tafsir and recitation.",
 };
 
-export default async function QuranPage() {
-  const surahs = await fetchSurahList();
+export default async function QuranPage({
+  searchParams,
+}: PageProps<"/quran">) {
+  const [surahs, params] = await Promise.all([fetchSurahList(), searchParams]);
+  const initialView = params.view === "juz" ? "juz" : "surah";
 
   return (
     <div className="relative">
@@ -36,7 +39,7 @@ export default async function QuranPage() {
         </header>
 
         <div className="mt-12">
-          <SurahIndex surahs={surahs} />
+          <SurahIndex surahs={surahs} initialView={initialView} />
         </div>
       </div>
     </div>

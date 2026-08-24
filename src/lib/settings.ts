@@ -10,10 +10,18 @@ import {
   type PrayerKey,
 } from "./prayer";
 
+export type ReadingMode = "study" | "mushaf";
+
 export type Settings = {
   prayer: { method: MethodKey; madhab: MadhabKey };
   display: { hour12: boolean };
   quran: {
+    /**
+     * study lays each ayah out separately with its translation and controls.
+     * mushaf runs the Arabic together as continuous text, the way a printed
+     * copy reads, with everything else out of the flow.
+     */
+    readingMode: ReadingMode;
     showEnglish: boolean;
     showUrdu: boolean;
     englishEdition: string;
@@ -36,6 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   display: { hour12: true },
   quran: {
+    readingMode: "study",
     showEnglish: true,
     showUrdu: false,
     englishEdition: "en.sahih",

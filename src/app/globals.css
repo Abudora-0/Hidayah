@@ -539,6 +539,27 @@ select:hover {
   }
 }
 
+/* Reveal on scroll.
+ *
+ * The plain hd-fade-up below runs on mount, which means content far below the
+ * fold finishes animating before it is ever seen. This drives the same motion
+ * from the element's own position in the scroll, so it plays as you arrive.
+ *
+ * Scroll driven animations are not everywhere yet, so the element is fully
+ * visible by default and the animation only attaches where supported. That way
+ * an unsupported browser shows the content rather than hiding it forever. */
+.hd-reveal {
+  opacity: 1;
+}
+
+@supports (animation-timeline: view()) {
+  .hd-reveal {
+    animation: hd-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 45%;
+  }
+}
+
 .hd-fade-up {
   animation: hd-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

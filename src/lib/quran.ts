@@ -197,3 +197,111 @@ export async function fetchSurah(
 export function ayahAudioUrl(reciterId: string, globalNumber: number) {
   return `https://cdn.islamic.network/quran/audio/128/${reciterId}/${globalNumber}.mp3`;
 }
+
+/* ==========================================================================
+   Juz
+
+   A juz spans surah boundaries, so each ayah carries its own surah metadata
+   and the reader inserts a heading wherever it changes.
+
+   The multi edition form of this endpoint does not exist: /v1/juz/{n}/editions
+   answers 404, unlike the surah route. So each edition is fetched separately
+   in parallel and merged on the global ayah number.
+   ========================================================================== */
+
+export type JuzAyah = Ayah & {
+  surahNumber: number;
+  surahArabicName: string;
+  surahEnglishName: string;
+  /** True for the first ayah of a surah, where a heading is inserted. */
+  startsSurah: boolean;
+};
+
+export type Juz = {
+  number: number;
+  ayahs: JuzAyah[];
+  /** Surahs touched by this juz, in order, for the heading and the index. */
+  surahs: { number: number; englishName: string; arabicName: string }[];
+};
+
+type CloudJuzAyah = CloudAyah & {
+  surah: {
+    number: number;
+    name: string;
+    englishName: string;
+    englishNameTranslation: string;
+    numberOfAyahs: number;
+    revelationType: string;
+  };
+};
+
+export async function fetchJuz(
+  number: number,
+  translationIds: string[],
+): Promise<Juz> {
+  const editions = [ARABIC_EDITION, ...translationIds];
+
+  const responses = await Promise.all(
+    editions.map((edition) =>
+      getJson<{ number: number; ayahs: CloudJuzAyah[] }>(
+        `${API}/juz/${number}/${edition}`,
+      ),
+    ),
+  );
+
+  const [arabic, ...rest] = responses;
+
+  // Translations are keyed by the global ayah number so the merge does not
+  // rely on the arrays lining up.
+  const byEdition = rest.map((response, index) => {
+    const map = new Map<number, string>();
+    for (const ayah of response.ayahs) map.set(ayah.number, ayah.text);
+    return { id: translationIds[index], map };
+  });
+
+  const surahs: Juz["surahs"] = [];
+  let previousSurah = -1;
+
+  const ayahs: JuzAyah[] = arabic.ayahs.map((ayah) => {
+    const startsSurah = ayah.numberInSurah === 1;
+
+    if (ayah.surah.number !== previousSurah) {
+      surahs.push({
+        number: ayah.surah.number,
+        englishName: ayah.surah.englishName,
+        arabicName: ayah.surah.name,
+      });
+      previousSurah = ayah.surah.number;
+    }
+
+    // The bismillah is prefixed to the opening ayah of each surah here too,
+    // and Al Fatihah is the one place it is genuinely part of the text.
+    const text =
+      startsSurah && ayah.surah.number !== 1
+        ? stripLeadingBismillah(ayah.text)
+        : ayah.text.replace(/^\ufeff/, "");
+
+    const translations: Record<string, string> = {};
+    for (const edition of byEdition) {
+      translations[edition.id] = edition.map.get(ayah.number) ?? "";
+    }
+
+    return {
+      numberInSurah: ayah.numberInSurah,
+      globalNumber: ayah.number,
+      arabic: text,
+      juz: ayah.juz,
+      page: ayah.page,
+      sajda: Boolean(ayah.sajda),
+      translations,
+      surahNumber: ayah.surah.number,
+      surahArabicName: ayah.surah.name,
+      surahEnglishName: ayah.surah.englishName,
+      startsSurah,
+    };
+  });
+
+  return { number: arabic.number, ayahs, surahs };
+}
+
+export const JUZ_NUMBERS = Array.from({ length: 30 }, (_, i) => i + 1);

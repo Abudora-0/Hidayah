@@ -7,10 +7,18 @@ import { GirihRule } from "@/components/ornament/GirihRule";
 import { SurahOpening } from "@/components/ornament/SurahOpening";
 import { AudioPlayer } from "./AudioPlayer";
 import { AyahRow } from "./AyahRow";
+import { AyahSheet } from "./AyahSheet";
+import { MushafView } from "./MushafView";
 import { ReaderControls } from "./ReaderControls";
 import { TafsirPanel } from "./TafsirPanel";
 import { updateSettings, useSettings } from "@/lib/settings";
-import { ayahAudioUrl, type Surah } from "@/lib/quran";
+import {
+  isBookmarked,
+  setLastRead,
+  toggleBookmark,
+  useReading,
+} from "@/lib/reading";
+import { ayahAudioUrl, type Ayah, type Surah } from "@/lib/quran";
 
 type SurahReaderProps = {
   surah: Surah;
@@ -52,10 +60,14 @@ export function SurahReader({
   const [duration, setDuration] = useState(0);
   const [repeat, setRepeat] = useState(false);
   const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
+  const [sheetAyah, setSheetAyah] = useState<Ayah | null>(null);
+  const reading = useReading();
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const { englishEdition, urduEdition, showEnglish, showUrdu } = settings.quran;
+  const { englishEdition, urduEdition, showEnglish, showUrdu, readingMode } =
+    settings.quran;
+  const mushaf = readingMode === "mushaf";
 
   // Any edition the server did not preload is fetched on demand and merged in.
   useEffect(() => {
@@ -171,6 +183,36 @@ export function SurahReader({
     }
   }
 
+  // Record where the reader has got to, so the resume card can offer it back.
+  // The topmost ayah intersecting the viewport is the one being read.
+  useEffect(() => {
+    const nodes = document.querySelectorAll<HTMLElement>('[id^="ayah-"]');
+    if (nodes.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (!visible) return;
+
+        const ayah = Number(visible.target.id.replace("ayah-", ""));
+        if (!Number.isFinite(ayah)) return;
+
+        setLastRead({
+          kind: "surah",
+          number: surah.number,
+          ayah,
+          label: `${surah.englishName} ${surah.number}:${ayah}`,
+        });
+      },
+      { rootMargin: "-96px 0px -60% 0px", threshold: 0 },
+    );
+
+    for (const node of nodes) observer.observe(node);
+    return () => observer.disconnect();
+  }, [surah.number, surah.englishName, mushaf, ayahs.length]);
+
   function seek(fraction: number) {
     const audio = audioRef.current;
     if (!audio || !Number.isFinite(audio.duration)) return;
@@ -226,6 +268,19 @@ export function SurahReader({
 
         <GirihRule className="my-10" />
 
+        {mushaf ? (
+          <MushafView
+            ayahs={ayahs}
+            arabicSize={settings.quran.arabicSize}
+            activeAyah={
+              activeAyah
+                ? (ayahs.find((a) => a.numberInSurah === activeAyah)
+                    ?.globalNumber ?? null)
+                : null
+            }
+            onSelect={(ayah) => setSheetAyah(ayah as Ayah)}
+          />
+        ) : (
         <div className="flex flex-col gap-2">
           {ayahs.map((ayah) => (
             <AyahRow
@@ -246,6 +301,7 @@ export function SurahReader({
             />
           ))}
         </div>
+        )}
 
         <GirihRule className="my-10" />
 
@@ -331,6 +387,39 @@ export function SurahReader({
           setPlaying(false);
           setPlayerOpen(false);
         }}
+      />
+
+      <AyahSheet
+        ayah={sheetAyah}
+        surahNumber={surah.number}
+        surahName={surah.englishName}
+        englishEdition={englishEdition}
+        urduEdition={urduEdition}
+        isPlaying={playing && activeAyah === sheetAyah?.numberInSurah}
+        isBookmarked={
+          sheetAyah
+            ? isBookmarked(reading, surah.number, sheetAyah.numberInSurah)
+            : false
+        }
+        onPlay={() => {
+          if (!sheetAyah) return;
+          if (activeAyah === sheetAyah.numberInSurah) setPlaying((p) => !p);
+          else playAyah(sheetAyah.numberInSurah);
+        }}
+        onTafsir={() => {
+          if (!sheetAyah) return;
+          setTafsirAyah(sheetAyah.numberInSurah);
+          setSheetAyah(null);
+        }}
+        onBookmark={() => {
+          if (!sheetAyah) return;
+          toggleBookmark(
+            surah.number,
+            sheetAyah.numberInSurah,
+            `${surah.englishName} ${surah.number}:${sheetAyah.numberInSurah}`,
+          );
+        }}
+        onClose={() => setSheetAyah(null)}
       />
 
       <TafsirPanel

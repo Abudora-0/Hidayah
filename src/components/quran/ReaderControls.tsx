@@ -7,7 +7,11 @@ import { Popover } from "@/components/ui/Popover";
 import { Select } from "@/components/ui/Select";
 import { Toggle } from "@/components/ui/Toggle";
 import { ENGLISH_EDITIONS, URDU_EDITIONS } from "@/data/editions";
-import { updateSettings, type Settings } from "@/lib/settings";
+import {
+  updateSettings,
+  type ReadingMode,
+  type Settings,
+} from "@/lib/settings";
 
 export function ReaderControls({ settings }: { settings: Settings }) {
   const [open, setOpen] = useState(false);
@@ -45,6 +49,41 @@ export function ReaderControls({ settings }: { settings: Settings }) {
         className="p-4"
       >
         <div>
+          <p className="text-[0.62rem] uppercase tracking-[0.26em] text-ink-faint">
+            Reading mode
+          </p>
+          <div
+            className="mt-3 grid grid-cols-2 gap-1.5"
+            role="group"
+            aria-label="Reading mode"
+          >
+            {(
+              [
+                { key: "study", label: "Study", note: "Ayah by ayah" },
+                { key: "mushaf", label: "Mushaf", note: "Flowing text" },
+              ] as { key: ReadingMode; label: string; note: string }[]
+            ).map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => patchQuran({ readingMode: option.key })}
+                aria-pressed={settings.quran.readingMode === option.key}
+                className={`rounded-[10px] border px-3 py-2 text-left transition-all duration-250 ${
+                  settings.quran.readingMode === option.key
+                    ? "border-gold bg-surface-2"
+                    : "border-line hover:border-line-strong"
+                }`}
+              >
+                <span className="block text-sm text-ink">{option.label}</span>
+                <span className="block text-[0.66rem] text-ink-faint">
+                  {option.note}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="hd-rule my-4" />
+
           <p className="text-[0.62rem] uppercase tracking-[0.26em] text-ink-faint">
             Reading size
           </p>
