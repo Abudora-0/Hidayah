@@ -40,7 +40,7 @@ export function PrayerTimeline({
         return (
           <li
             key={entry.key}
-            className="hd-fade-up"
+            className="hd-reveal"
             style={{ animationDelay: `${index * 55}ms` }}
           >
             <div

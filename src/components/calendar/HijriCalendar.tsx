@@ -201,7 +201,7 @@ export function HijriCalendar() {
               onClick={() => setSelected(isSelected ? null : index)}
               aria-pressed={isSelected}
               aria-label={`${formatHijri(cell.hijri)}, ${new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(cell.gregorian)}${marked ? `, ${cell.occasions.map((o) => o.name).join(", ")}` : ""}`}
-              className={`hd-fade-up relative flex aspect-square flex-col items-center justify-center rounded-[10px] border transition-all duration-300 ${
+              className={`hd-reveal relative flex aspect-square flex-col items-center justify-center rounded-[10px] border transition-all duration-300 ${
                 cell.isToday
                   ? "border-gold bg-gold/12"
                   : isSelected
@@ -307,7 +307,7 @@ export function HijriCalendar() {
           {upcoming.map(({ occasion, date, year }) => (
             <li
               key={`${occasion.id}-${year}`}
-              className="hd-card flex items-center gap-4 p-4"
+              className="hd-card hd-lift flex items-center gap-4 p-4"
             >
               <span
                 className={`h-2 w-2 shrink-0 rounded-full ${OCCASION_STYLES[occasion.kind].dot}`}

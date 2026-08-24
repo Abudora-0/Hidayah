@@ -183,12 +183,12 @@ export function SurahIndex({
           {results.map((surah, index) => (
             <li
               key={surah.number}
-              className="hd-fade-up"
+              className="hd-reveal"
               style={{ animationDelay: `${Math.min(index, 18) * 28}ms` }}
             >
               <Link
                 href={`/quran/${surah.number}`}
-                className="hd-card group flex h-full items-center gap-4 p-4"
+                className="hd-card hd-lift group flex h-full items-center gap-4 p-4"
               >
                 <span className="relative grid h-11 w-11 shrink-0 place-items-center">
                   <svg

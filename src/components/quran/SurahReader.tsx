@@ -309,7 +309,7 @@ export function SurahReader({
           {previous ? (
             <Link
               href={`/quran/${previous.number}`}
-              className="hd-card flex flex-1 items-center gap-3 p-4"
+              className="hd-card hd-lift flex flex-1 items-center gap-3 p-4"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-gold" fill="none" aria-hidden="true">
                 <path d="m14 6-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -330,7 +330,7 @@ export function SurahReader({
           {next ? (
             <Link
               href={`/quran/${next.number}`}
-              className="hd-card flex flex-1 items-center justify-end gap-3 p-4 text-right"
+              className="hd-card hd-lift flex flex-1 items-center justify-end gap-3 p-4 text-right"
             >
               <span className="min-w-0">
                 <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-ink-faint">
