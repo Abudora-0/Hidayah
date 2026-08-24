@@ -107,32 +107,37 @@ export function CountdownRing({
         ))}
       </svg>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <p className="text-[0.62rem] uppercase tracking-[0.32em] text-ink-faint">
+      {/* The dial is a circle, so the usable width shrinks towards the top and
+          bottom. The two labels sit nearest the edge and were the widest
+          things here, so they are the ones that crossed the stroke. Padding
+          keeps everything inside the inscribed area rather than the bounding
+          box, and the labels are tracked tighter so their corners clear it. */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center">
+        <p className="max-w-full truncate text-[0.55rem] uppercase tracking-[0.18em] text-ink-faint">
           {isTomorrow ? "Tomorrow" : "Next prayer"}
         </p>
 
         <p
           dir="rtl"
           lang="ar"
-          className="font-quran mt-2 text-3xl text-gold-ink"
+          className="font-quran mt-1.5 text-2xl leading-tight text-gold-ink"
         >
           {label.ar}
         </p>
-        <p className="font-kufi text-xl text-ink">{label.en}</p>
+        <p className="font-kufi text-lg leading-tight text-ink">{label.en}</p>
 
-        <p className="mt-2 font-kufi text-2xl tabular-nums text-gold-ink">
+        <p className="mt-1.5 font-kufi text-xl tabular-nums leading-none text-gold-ink">
           {formatTime(target, hour12)}
         </p>
 
-        <div className="mt-3 flex items-baseline gap-1 tabular-nums">
-          <span className="font-kufi text-2xl text-ink">{pad(hours)}</span>
-          <span className="text-ink-faint">:</span>
-          <span className="font-kufi text-2xl text-ink">{pad(minutes)}</span>
-          <span className="text-ink-faint">:</span>
-          <span className="font-kufi text-2xl text-ink-dim">{pad(seconds)}</span>
+        <div className="mt-2 flex items-baseline gap-1 tabular-nums">
+          <span className="font-kufi text-xl leading-none text-ink">{pad(hours)}</span>
+          <span className="text-sm text-ink-faint">:</span>
+          <span className="font-kufi text-xl leading-none text-ink">{pad(minutes)}</span>
+          <span className="text-sm text-ink-faint">:</span>
+          <span className="font-kufi text-xl leading-none text-ink-dim">{pad(seconds)}</span>
         </div>
-        <p className="mt-1 text-[0.65rem] uppercase tracking-[0.2em] text-ink-faint">
+        <p className="mt-1 max-w-full truncate text-[0.55rem] uppercase tracking-[0.18em] text-ink-faint">
           remaining
         </p>
       </div>
