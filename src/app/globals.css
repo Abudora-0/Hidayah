@@ -11,6 +11,9 @@
 
 :root,
 [data-theme="emerald"][data-mode="dark"] {
+  --glow: #0e3a2c;
+  --deep: #0a2a20;
+  --panel-top: #134034;
   --s0: #051a15;
   --s1: #06231c;
   --s2: #0b3227;
@@ -26,6 +29,9 @@
 }
 
 [data-theme="emerald"][data-mode="light"] {
+  --glow: #fffdf6;
+  --deep: #efe8d6;
+  --panel-top: #f7f2e4;
   --s0: #f2ede0;
   --s1: #fffdf6;
   --s2: #e8e1cf;
@@ -41,6 +47,9 @@
 }
 
 [data-theme="lapis"][data-mode="dark"] {
+  --glow: #123a5c;
+  --deep: #0d2440;
+  --panel-top: #16324e;
   --s0: #08131f;
   --s1: #0b1a2f;
   --s2: #14293f;
@@ -56,6 +65,9 @@
 }
 
 [data-theme="lapis"][data-mode="light"] {
+  --glow: #fffbf2;
+  --deep: #ece3d0;
+  --panel-top: #f5eee0;
   --s0: #f1eade;
   --s1: #fffbf2;
   --s2: #e6dcc7;
@@ -71,6 +83,9 @@
 }
 
 [data-theme="ink"][data-mode="dark"] {
+  --glow: #26241f;
+  --deep: #171614;
+  --panel-top: #2a2722;
   --s0: #0b0b0b;
   --s1: #121212;
   --s2: #1c1b19;
@@ -86,6 +101,9 @@
 }
 
 [data-theme="ink"][data-mode="light"] {
+  --glow: #ffffff;
+  --deep: #f0ebe1;
+  --panel-top: #f8f5ef;
   --s0: #f5f2ec;
   --s1: #ffffff;
   --s2: #ece7dd;
@@ -128,6 +146,7 @@
 
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-kufi: var(--font-display), Georgia, serif;
+  --font-wordmark: var(--font-marcellus), Georgia, serif;
   --font-quran: var(--font-uthmani), Georgia, serif;
   --font-urdu: var(--font-nastaliq), serif;
 }
@@ -561,8 +580,74 @@ select:hover {
   );
 }
 
+/* ==========================================================================
+   Depth
+
+   Flat single value fills read as cheap at this scale. These build falloff
+   from each palette's own tokens, so every theme keeps its character and the
+   contrast audit still passes: the text tokens are unchanged, only the ground
+   beneath them gains a gradient.
+   ========================================================================== */
+
+/* The page ground. A soft pool of light near the top, fading into the deeper
+   tone, so the surface has a light source rather than one flat value. */
+.hd-ground {
+  background:
+    radial-gradient(
+      120% 62% at 50% -8%,
+      color-mix(in srgb, var(--glow) 60%, transparent) 0%,
+      transparent 62%
+    ),
+    linear-gradient(180deg, var(--s0) 0%, var(--deep) 100%);
+  background-attachment: scroll;
+}
+
+/* A panel that catches light along its upper edge. */
+.hd-panel {
+  background: linear-gradient(
+    170deg,
+    color-mix(in srgb, var(--panel-top) 82%, transparent) 0%,
+    var(--s1) 58%
+  );
+}
+
+/* A hairline of light along the top border, the way a bevelled edge catches
+   it. Layered as a pseudo element so it does not disturb the border colour. */
+.hd-edge {
+  position: relative;
+}
+
+.hd-edge::before {
+  content: "";
+  position: absolute;
+  inset-inline: 12%;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--gold) 55%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* A warm pool behind a focal element, such as the countdown dial. */
+.hd-halo {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--gold) 12%, transparent) 0%,
+    transparent 78%
+  );
+}
+
 .hd-card {
-  background-color: var(--s1);
+  position: relative;
+  background: linear-gradient(
+    170deg,
+    color-mix(in srgb, var(--panel-top) 55%, var(--s1)) 0%,
+    var(--s1) 62%
+  );
   border: 1px solid var(--line);
   border-radius: 14px;
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
@@ -573,6 +658,37 @@ select:hover {
    popover opened inside the card so that later siblings paint over it. The
    colour shift alone reads the same. Cards that never contain a popover can
    add .hd-lift for the movement. */
+/* The hairline of light along the top edge, so a panel reads as a surface
+   catching a light source rather than a flat rectangle. */
+.hd-card::before {
+  content: "";
+  position: absolute;
+  inset-inline: 14%;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--gold) 45%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.hd-card:hover::before {
+  inset-inline: 6%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--gold) 70%, transparent),
+    transparent
+  );
+}
+
+.hd-card::before {
+  transition: inset-inline 0.4s ease, background 0.4s ease;
+}
+
 .hd-card:hover {
   border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
   background-color: color-mix(in srgb, var(--gold) 4%, var(--s1));
@@ -584,6 +700,56 @@ select:hover {
 
 .hd-lift:hover {
   transform: translateY(-3px);
+}
+
+/* The wordmark's gold sweep. The gradient is clipped to the glyphs, so the
+   light travels through the letterforms rather than behind them. */
+@keyframes hd-sheen {
+  0% {
+    background-position: 200% 0;
+  }
+  60%,
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+@supports not (background-clip: text) {
+  .hd-sheen {
+    color: var(--gold-ink);
+  }
+}
+
+.hd-sheen {
+  background-image: linear-gradient(
+    100deg,
+    var(--gold) 18%,
+    var(--gold-soft) 40%,
+    color-mix(in srgb, var(--gold-soft) 55%, white) 50%,
+    var(--gold-soft) 60%,
+    var(--gold) 82%
+  );
+  background-size: 220% 100%;
+  background-position: 200% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hd-sheen 6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s infinite;
+}
+
+/* A rule that opens outward from its centre. */
+@keyframes hd-open {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.hd-open {
+  transform-origin: center;
+  animation: hd-open 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Respect the user. Every animation above collapses to nothing. */

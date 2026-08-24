@@ -25,8 +25,12 @@ export async function GET(
     return new Response("Not found", { status: 404 });
   }
 
-  return new ImageResponse(<BrandIcon size={dimension} />, {
-    width: dimension,
-    height: dimension,
-  });
+  // The maskable variant keeps its plate, since a maskable icon must fill its
+  // safe area and a transparent one renders as a black tile on a home screen.
+  const maskable = new URL(_request.url).searchParams.get("maskable") === "1";
+
+  return new ImageResponse(
+    <BrandIcon size={dimension} plate={maskable} />,
+    { width: dimension, height: dimension },
+  );
 }

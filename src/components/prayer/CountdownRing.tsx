@@ -45,6 +45,13 @@ export function CountdownRing({
       aria-live="off"
       aria-label={`Time remaining until ${label.en}`}
     >
+      {/* A warm pool behind the dial, so the ring sits in light rather than on
+          a flat field. */}
+      <span
+        className="hd-halo pointer-events-none absolute -inset-6 rounded-full"
+        aria-hidden="true"
+      />
+
       <svg
         width={SIZE}
         height={SIZE}

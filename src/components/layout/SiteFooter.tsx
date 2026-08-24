@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { GirihRule } from "@/components/ornament/GirihRule";
-import { GirihMark } from "@/components/ornament/GirihMark";
+import { Wordmark } from "@/components/ornament/Wordmark";
 
 const SOURCES = [
   { label: "Prayer times", href: "https://aladhan.com" },
@@ -17,7 +17,7 @@ export function SiteFooter() {
         <GirihRule className="mb-10" />
 
         <div className="flex flex-col items-center gap-8 text-center">
-          <GirihMark size={38} className="text-gold hd-spin-slow" />
+          <Wordmark layout="stacked" size={22} animated={false} />
 
           <p className="max-w-md text-sm leading-relaxed text-ink-dim">
             Prayer times are calculated locally on your device. Occasion dates

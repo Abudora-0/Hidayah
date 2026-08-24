@@ -49,7 +49,7 @@ export function SiteHeader() {
           href="/"
           className="shrink-0 transition-opacity duration-300 hover:opacity-80"
         >
-          <Wordmark size={30} />
+          <Wordmark size={19} />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

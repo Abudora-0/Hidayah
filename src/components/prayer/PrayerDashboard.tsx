@@ -205,7 +205,7 @@ function LocationOnboarding({
       <Lattice className="text-gold" scale={96} opacity={0.06} />
 
       <div className="relative mx-auto flex w-full max-w-xl flex-col items-center px-4 py-24 text-center sm:px-6">
-        <Wordmark layout="stacked" size={38} animated />
+        <Wordmark layout="stacked" size={40} />
 
         <GirihRule className="my-10 w-full max-w-xs" />
 
