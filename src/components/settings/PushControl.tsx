@@ -11,6 +11,7 @@ import {
   enablePush,
   pushPublicKey,
   pushSupported,
+  onTestPushReceived,
   sendTestPush,
 } from "@/lib/push-client";
 import type { StoredLocation } from "@/lib/location";
@@ -23,7 +24,7 @@ type PushControlProps = {
 };
 
 type Status = "unknown" | "off" | "on" | "working";
-type TestState = "idle" | "sending" | "sent";
+type TestState = "idle" | "sending" | "sent" | "arrived";
 
 export function PushControl({ location, settings }: PushControlProps) {
   const [status, setStatus] = useState<Status>("unknown");
@@ -62,8 +63,14 @@ export function PushControl({ location, settings }: PushControlProps) {
 
       if (!next) {
         setStatus("working");
-        await disablePush();
-        setStatus("off");
+        try {
+          await disablePush();
+        } finally {
+          // Whatever the browser did with the subscription, the control has
+          // to come back. Leaving it working disables it for good.
+          setStatus("off");
+          setTestState("idle");
+        }
         return;
       }
 
@@ -96,6 +103,8 @@ export function PushControl({ location, settings }: PushControlProps) {
     },
     [location, enabledPrayers, settings.prayer.method, settings.prayer.madhab],
   );
+
+  useEffect(() => onTestPushReceived(() => setTestState("arrived")), []);
 
   const test = useCallback(async () => {
     setError(null);
@@ -183,6 +192,13 @@ export function PushControl({ location, settings }: PushControlProps) {
             <span className="text-xs text-ink-faint">
               Sent. It should arrive within a few seconds, even with this tab
               closed.
+            </span>
+          ) : null}
+          {testState === "arrived" ? (
+            <span className="text-xs text-gold-ink">
+              The push reached this device. If no notification appeared, the
+              system is hiding it: check notifications for your browser in
+              Windows settings, and turn off Do not disturb.
             </span>
           ) : null}
         </div>

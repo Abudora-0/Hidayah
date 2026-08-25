@@ -36,7 +36,14 @@ self.addEventListener("push", (event) => {
       //
       // A test push is checking that delivery works, not announcing a prayer,
       // so it shows the notification without calling anyone to prayer.
-      if (!payload.test) {
+      if (payload.test) {
+        // Tells any open tab that the push itself arrived. Whether the
+        // notification below is then displayed is up to the system, and this
+        // is the only way to tell those two failures apart.
+        for (const client of clients) {
+          client.postMessage({ type: "hidayah-test" });
+        }
+      } else {
         for (const client of clients) {
           client.postMessage({ type: "hidayah-prayer", prayer: payload.prayer });
         }

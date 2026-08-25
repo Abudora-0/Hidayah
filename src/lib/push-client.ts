@@ -41,6 +41,31 @@ export async function currentSubscription() {
 
 export class PushError extends Error {}
 
+/** Whether a subscription was created against the key we are signing with. */
+function matchesKey(subscription: PushSubscription, key: Uint8Array) {
+  const raw = subscription.options?.applicationServerKey;
+  if (!raw) return false;
+  const bytes = new Uint8Array(raw as ArrayBuffer);
+  if (bytes.length !== key.length) return false;
+  return bytes.every((byte, at) => byte === key[at]);
+}
+
+/**
+ * Calls back when the worker reports that a test push reached this device.
+ *
+ * Delivery and display are separate steps, and only the worker can see the
+ * first. Without this a notification suppressed by the operating system looks
+ * exactly like one that never arrived.
+ */
+export function onTestPushReceived(callback: () => void) {
+  if (!pushSupported()) return () => {};
+  function handle(event: MessageEvent) {
+    if (event.data?.type === "hidayah-test") callback();
+  }
+  navigator.serviceWorker.addEventListener("message", handle);
+  return () => navigator.serviceWorker.removeEventListener("message", handle);
+}
+
 /**
  * Brave turns Google's push service off by default, and every subscription
  * attempt then fails with the same opaque AbortError. Knowing the browser is
@@ -163,7 +188,15 @@ export async function enablePush({
     );
   }
 
-  const existing = await registration.pushManager.getSubscription();
+  // A subscription left over from an earlier key cannot be delivered to: the
+  // push service checks it against the key it was made with. Reusing one is
+  // silent breakage, so it is discarded rather than trusted.
+  let existing = await registration.pushManager.getSubscription();
+  if (existing && !matchesKey(existing, applicationServerKey)) {
+    await existing.unsubscribe().catch(() => false);
+    existing = null;
+  }
+
   let subscription: PushSubscription;
   try {
     subscription =
@@ -212,7 +245,10 @@ export async function disablePush() {
     // Even if the server call fails, unsubscribing locally is the right thing.
   });
 
-  await subscription.unsubscribe();
+  // A browser that refuses to let go of a subscription must not leave the
+  // control stuck mid flight. The server has already forgotten this device,
+  // which is the part that decides whether anything more is delivered.
+  await subscription.unsubscribe().catch(() => false);
 }
 
 /**
