@@ -41,6 +41,58 @@ export async function currentSubscription() {
 
 export class PushError extends Error {}
 
+/**
+ * Brave turns Google's push service off by default, and every subscription
+ * attempt then fails with the same opaque AbortError. Knowing the browser is
+ * the difference between a dead end and a setting to change.
+ */
+async function isBrave() {
+  const nav = navigator as Navigator & {
+    brave?: { isBrave?: () => Promise<boolean> };
+  };
+  try {
+    return (await nav.brave?.isBrave?.()) === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Turns a refusal from the push service into something actionable.
+ *
+ * An AbortError here almost never means the page did anything wrong. It means
+ * the browser could not reach the service that delivers pushes, which is a
+ * setting or a network, so the message points at those.
+ */
+async function explainSubscribeFailure(caught: unknown) {
+  const detail = describe(caught);
+
+  if (caught instanceof DOMException && caught.name === "AbortError") {
+    if (await isBrave()) {
+      return (
+        "Brave blocks the push service until you allow it. Open " +
+        "brave://settings/privacy, turn on \"Use Google services for push " +
+        "messaging\", then restart Brave and try again."
+      );
+    }
+    return (
+      "The browser could not reach its push service, so notifications cannot " +
+      "be registered. This is usually a browser setting or a network that " +
+      `blocks it rather than a fault in Hidayah. (${detail})`
+    );
+  }
+
+  if (caught instanceof DOMException && caught.name === "NotAllowedError") {
+    return (
+      "Notifications are blocked for this site, or by the operating system. " +
+      "Allow them for Hidayah in the browser and check that notifications " +
+      "are enabled for your browser in system settings."
+    );
+  }
+
+  return `The browser refused the subscription. ${detail}`;
+}
+
 /** Whatever the platform threw, in a form worth showing someone. */
 function describe(caught: unknown) {
   if (caught instanceof DOMException) {
@@ -123,7 +175,7 @@ export async function enablePush({
   } catch (caught) {
     // The browser refuses for reasons it will only state in the exception,
     // and hiding that behind a generic sentence leaves nothing to act on.
-    throw new PushError(`The browser refused the subscription. ${describe(caught)}`);
+    throw new PushError(await explainSubscribeFailure(caught));
   }
 
   const response = await fetch("/api/push/subscribe", {
