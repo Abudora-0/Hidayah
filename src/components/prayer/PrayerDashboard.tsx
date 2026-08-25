@@ -228,6 +228,37 @@ function DashboardSkeleton() {
   );
 }
 
+/* The four things the app does, shown once to someone who has not set a
+   location yet. Drawn in the same line weight as the rest of the ornament. */
+const OFFERINGS = [
+  {
+    key: "prayer",
+    name: "nav.prayer",
+    note: "welcome.prayerNote",
+    // A mihrab arch, the niche a prayer faces.
+    path: "M6 21V11a6 6 0 0 1 12 0v10M3.5 21h17",
+  },
+  {
+    key: "quran",
+    name: "nav.quran",
+    note: "welcome.quranNote",
+    path: "M12 6.6C10.4 5.1 8.4 4.6 6 4.6v12.8c2.4 0 4.4.5 6 2 1.6-1.5 3.6-2 6-2V4.6c-2.4 0-4.4.5-6 2zM12 6.6v12.8",
+  },
+  {
+    key: "tasbih",
+    name: "nav.tasbih",
+    note: "welcome.tasbihNote",
+    path: "M4.5 15a7.5 7.5 0 0 1 15 0",
+    beads: true,
+  },
+  {
+    key: "calendar",
+    name: "nav.calendar",
+    note: "welcome.calendarNote",
+    path: "M15.6 3.7a8.5 8.5 0 1 0 4.7 10.8 7 7 0 0 1-4.7-10.8z",
+  },
+] as const;
+
 function LocationOnboarding({
   onChange,
 }: {
@@ -239,19 +270,68 @@ function LocationOnboarding({
     <div className="relative overflow-hidden">
       <Lattice className="text-gold" scale={96} opacity={0.06} />
 
-      <div className="relative mx-auto flex w-full max-w-xl flex-col items-center px-4 py-24 text-center sm:px-6">
+      <div className="relative mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-20 text-center sm:px-6">
         <Wordmark layout="stacked" size={40} />
 
-        <GirihRule className="my-10 w-full max-w-xs" />
+        <p className="mt-6 max-w-md text-sm leading-relaxed text-ink-dim">
+          {t("welcome.tagline")}
+        </p>
+
+        <GirihRule className="my-9 w-full max-w-xs" />
 
         <h1 className="font-kufi text-2xl text-ink">{t("location.where")}</h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-dim">
-{t("location.whyNote")}
+          {t("location.whyNote")}
         </p>
 
         <div className="mt-8">
           <LocationBar location={null} onChange={onChange} />
         </div>
+
+        <GirihRule className="my-11 w-full max-w-xs" compact />
+
+        <h2 className="font-kufi text-[0.7rem] uppercase tracking-[0.24em] text-ink-faint">
+          {t("welcome.inside")}
+        </h2>
+
+        <ul className="mt-7 grid w-full grid-cols-1 gap-x-8 gap-y-7 text-start sm:grid-cols-2">
+          {OFFERINGS.map((item) => (
+            <li key={item.key} className="flex items-start gap-3.5">
+              <span
+                className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-gold"
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 24 24" className="h-[1.15rem] w-[1.15rem]" fill="none">
+                  <path
+                    d={item.path}
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  {"beads" in item && item.beads
+                    ? [5.6, 12, 18.4].map((cx, at) => (
+                        <circle
+                          key={cx}
+                          cx={cx}
+                          cy={at === 1 ? 7.9 : 14.2}
+                          r="1.5"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                        />
+                      ))
+                    : null}
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <p className="font-kufi text-sm text-ink">{t(item.name)}</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-faint">
+                  {t(item.note)}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

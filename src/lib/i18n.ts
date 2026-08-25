@@ -31,6 +31,13 @@ const UR: Record<string, string> = {
   "nav.openMenu": "مینو کھولیں",
   "nav.changeTheme": "رنگ تبدیل کریں",
   "nav.language": "زبان",
+  "welcome.tagline":
+    "نماز کے اوقات، قرآن، اور ہجری تقویم، سب ایک پرسکون جگہ پر۔",
+  "welcome.inside": "اندر کیا ہے",
+  "welcome.prayerNote": "آپ کے شہر کے اوقات، ہر نماز سے پہلے الارم کے ساتھ",
+  "welcome.quranNote": "تمام ۱۱۴ سورتیں، ترجمہ، تفسیر اور تلاوت کے ساتھ",
+  "welcome.tasbihNote": "ذکر کا شمار، جو آپ کی واپسی تک محفوظ رہتا ہے",
+  "welcome.calendarNote": "ہجری تاریخ، اور وہ مہینے جو اہم ہیں",
 
   // Prayer dashboard
   "prayer.next": "اگلی نماز",
@@ -204,6 +211,13 @@ const EN: Record<string, string> = {
   "nav.openMenu": "Open menu",
   "nav.changeTheme": "Change theme",
   "nav.language": "Language",
+  "welcome.tagline":
+    "Prayer times, the Quran, and the Hijri calendar, kept in one quiet place.",
+  "welcome.inside": "What is inside",
+  "welcome.prayerNote": "Times for your city, with an alarm before each one",
+  "welcome.quranNote": "All 114 surahs, with translation, tafsir and recitation",
+  "welcome.tasbihNote": "A count for dhikr, kept for your return",
+  "welcome.calendarNote": "The Hijri date, and the months that matter",
 
   "prayer.next": "Next prayer",
   "prayer.tomorrow": "Tomorrow",
