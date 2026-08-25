@@ -45,6 +45,12 @@ const UR: Record<string, string> = {
     "آپ کے متناسقات اور ٹائم زون سرور پر محفوظ ہیں تاکہ کوئی براؤزر نہ چل رہا ہو تب بھی نماز کے اوقات نکالے جا سکیں۔ اسے بند کرنے پر یہ حذف ہو جاتے ہیں۔",
   "push.willStore":
     "اسے آن کرنے سے آپ کے متناسقات اور ٹائم زون سرور کو بھیجے جاتے ہیں۔ یہ اس لیے درکار ہیں کہ کوئی براؤزر نہ چل رہا ہو تب بھی نماز کے اوقات نکالے جا سکیں، اور بند کرنے پر حذف ہو جاتے ہیں۔",
+  "push.queued":
+    "{n} آنے والی نمازیں قطار میں ہیں۔ یہ ہر ونڈو بند ہونے پر بھی پہنچ جائیں گی۔",
+  "push.queuedNone":
+    "آج آپ کی چنی ہوئی کوئی نماز باقی نہیں۔ کل کی نمازیں روزانہ کے عمل میں قطار میں لگ جائیں گی۔",
+  "push.schedulingOff":
+    "یہ آلہ سبسکرائب ہے، مگر اس تنصیب پر نماز کے اوقات قطار میں نہیں لگ رہے، اس لیے خود سے کچھ نہیں پہنچے گا۔ آزمائشی اطلاع پھر بھی کام کرتی ہے۔",
   "push.test":
     "آزمائشی اطلاع بھیجیں",
   "push.testSending":
@@ -285,6 +291,12 @@ const EN: Record<string, string> = {
     "Your coordinates and time zone are stored on the server so prayer times can be worked out while no browser is running. Turning this off deletes them.",
   "push.willStore":
     "Turning this on sends your coordinates and time zone to the server. They are needed to work out prayer times when no browser is running, and are deleted when you turn it off.",
+  "push.queued":
+    "{n} upcoming prayers are queued. They will arrive even with every window closed.",
+  "push.queuedNone":
+    "None of your chosen prayers are still ahead today. Tomorrow's are queued at the daily run.",
+  "push.schedulingOff":
+    "This device is subscribed, but prayer times are not being queued on this deployment, so nothing will arrive on its own. A test notification still works.",
   "push.test":
     "Send a test notification",
   "push.testSending":

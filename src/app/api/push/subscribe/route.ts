@@ -7,6 +7,7 @@ import {
   subscriptionId,
 } from "@/lib/push-store";
 import { vapidConfigured } from "@/lib/push-server";
+import { schedulingConfigured, scheduleUpcoming } from "@/lib/push-schedule";
 
 type Body = {
   subscription?: {
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
 
   const id = subscriptionId(endpoint);
 
-  await saveSubscription({
+  const record = {
     id,
     endpoint,
     keys: { p256dh, auth },
@@ -90,7 +91,22 @@ export async function POST(request: Request) {
     madhab: (body.madhab as never) ?? "hanafi",
     prayers,
     createdAt: Date.now(),
-  });
+  };
 
-  return NextResponse.json({ id, prayers });
+  await saveSubscription(record);
+
+  // The cron runs once a day. Without this, anyone subscribing after it has
+  // run is queued for nothing until the next one, and hears nothing at all in
+  // the meantime, which reads as the feature being broken.
+  const { scheduled } = await scheduleUpcoming(record);
+
+  // Whether anything can be queued at all is reported separately from how
+  // much was. Without it a deployment missing its scheduling configuration
+  // looks exactly like a day with no prayers left, and stays broken unseen.
+  return NextResponse.json({
+    id,
+    prayers,
+    scheduled,
+    scheduling: schedulingConfigured(),
+  });
 }

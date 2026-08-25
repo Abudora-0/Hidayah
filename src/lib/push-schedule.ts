@@ -1,0 +1,110 @@
+import { Client } from "@upstash/qstash";
+
+import { getDayTimes, type PrayerKey } from "./prayer";
+import { dateForLocalDay, formatLocalDay, localDateInZone } from "./push-server";
+import { claimSchedule, type PushSubscriptionRecord } from "./push-store";
+
+/**
+ * Handing prayers to QStash, which calls back at the minute each one begins.
+ *
+ * This is shared by the daily cron and by subscribing, because a subscriber
+ * who arrives after the day's run would otherwise be queued for nothing until
+ * the next one, and hear nothing for up to a day. Claiming each prayer in
+ * Redis first means the two callers cannot notify anyone twice.
+ */
+
+/** Slightly longer than a day, so nothing falls between two cron runs. */
+const WINDOW_HOURS = 26;
+const MAX_QSTASH_DELAY_DAYS = 7;
+
+export type ScheduleOutcome = {
+  scheduled: number;
+  skipped: number;
+  failures: string[];
+};
+
+export function schedulingConfigured() {
+  return Boolean(process.env.QSTASH_TOKEN && process.env.NEXT_PUBLIC_SITE_URL);
+}
+
+/** Where QStash is told to call back. */
+export function callbackUrl() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  return `${siteUrl.replace(/\/$/, "")}/api/push/fire`;
+}
+
+/**
+ * Queues every prayer this subscriber has asked for that falls inside the
+ * window and has not been claimed already.
+ */
+export async function scheduleUpcoming(
+  record: PushSubscriptionRecord,
+  now = new Date(),
+): Promise<ScheduleOutcome> {
+  const outcome: ScheduleOutcome = { scheduled: 0, skipped: 0, failures: [] };
+
+  if (!schedulingConfigured()) return outcome;
+
+  const qstash = new Client({ token: process.env.QSTASH_TOKEN as string });
+  const callback = callbackUrl();
+
+  const horizon = new Date(now.getTime() + WINDOW_HOURS * 3600 * 1000);
+  const maxDelay = new Date(
+    now.getTime() + MAX_QSTASH_DELAY_DAYS * 24 * 3600 * 1000,
+  );
+
+  // The subscriber's own calendar day, and the one after it, so the window can
+  // span midnight wherever they are.
+  const today = localDateInZone(record.timeZone, now);
+  const tomorrow = localDateInZone(
+    record.timeZone,
+    new Date(now.getTime() + 24 * 3600 * 1000),
+  );
+
+  for (const day of [today, tomorrow]) {
+    const times = getDayTimes(
+      record.latitude,
+      record.longitude,
+      dateForLocalDay(day.year, day.month, day.day),
+      { method: record.method, madhab: record.madhab },
+    );
+
+    for (const prayer of record.prayers) {
+      const at = times[prayer as PrayerKey];
+      if (!at || Number.isNaN(at.getTime())) continue;
+      if (at <= now || at > horizon || at > maxDelay) {
+        outcome.skipped += 1;
+        continue;
+      }
+
+      const claimed = await claimSchedule(
+        record.id,
+        formatLocalDay(day),
+        prayer,
+      );
+      if (!claimed) {
+        outcome.skipped += 1;
+        continue;
+      }
+
+      try {
+        await qstash.publishJSON({
+          url: callback,
+          body: { subscriptionId: record.id, prayer, at: at.toISOString() },
+          // Absolute delivery time in whole seconds, so the notification lands
+          // on the prayer rather than near it.
+          notBefore: Math.floor(at.getTime() / 1000),
+        });
+        outcome.scheduled += 1;
+      } catch (error) {
+        outcome.failures.push(
+          `${record.id}:${prayer}: ${
+            error instanceof Error ? error.message : "unknown"
+          }`,
+        );
+      }
+    }
+  }
+
+  return outcome;
+}

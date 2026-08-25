@@ -50,6 +50,8 @@ export function PushControl({ location, settings }: PushControlProps) {
   const [status, setStatus] = useState<Status>("unknown");
   const [error, setError] = useState<string | null>(null);
   const [testState, setTestState] = useState<TestState>("idle");
+  const [queued, setQueued] = useState<number | null>(null);
+  const [scheduling, setScheduling] = useState(true);
 
   // Support cannot be tested on the server, and rendering the unsupported
   // branch there and the supported one after hydration is a mismatch. So the
@@ -90,6 +92,7 @@ export function PushControl({ location, settings }: PushControlProps) {
           // to come back. Leaving it working disables it for good.
           setStatus("off");
           setTestState("idle");
+          setQueued(null);
         }
         return;
       }
@@ -105,12 +108,14 @@ export function PushControl({ location, settings }: PushControlProps) {
 
       setStatus("working");
       try {
-        await enablePush({
+        const { scheduled, scheduling: canSchedule } = await enablePush({
           location,
           method: settings.prayer.method,
           madhab: settings.prayer.madhab,
           prayers: enabledPrayers as PrayerKey[],
         });
+        setQueued(scheduled);
+        setScheduling(canSchedule);
         setStatus("on");
       } catch (caught) {
         setError(describePushError(t, caught));
@@ -183,6 +188,16 @@ export function PushControl({ location, settings }: PushControlProps) {
           {t("push.willStore")}
         </p>
       )}
+
+      {status === "on" && queued !== null ? (
+        <p className="mt-3 text-xs leading-relaxed text-ink-faint">
+          {!scheduling
+            ? t("push.schedulingOff")
+            : queued > 0
+              ? t("push.queued").replace("{n}", String(queued))
+              : t("push.queuedNone")}
+        </p>
+      ) : null}
 
       {status === "on" ? (
         <div className="mt-4 flex flex-wrap items-center gap-3">

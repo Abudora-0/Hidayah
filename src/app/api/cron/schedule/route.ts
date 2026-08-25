@@ -1,17 +1,11 @@
-import { Client } from "@upstash/qstash";
 import { NextResponse } from "next/server";
 
-import { getDayTimes, type PrayerKey } from "@/lib/prayer";
 import {
-  dateForLocalDay,
-  formatLocalDay,
-  localDateInZone,
-} from "@/lib/push-server";
-import {
-  claimSchedule,
-  listSubscriptions,
-  pushStorageConfigured,
-} from "@/lib/push-store";
+  callbackUrl,
+  schedulingConfigured,
+  scheduleUpcoming,
+} from "@/lib/push-schedule";
+import { listSubscriptions, pushStorageConfigured } from "@/lib/push-store";
 
 /**
  * The daily enqueue.
@@ -22,13 +16,10 @@ import {
  * back at the exact minute. The drift is harmless because only the enqueue is
  * affected, not the delivery.
  *
- * A rolling window slightly longer than a day is covered so that nothing falls
- * between two runs. Each prayer is claimed in Redis first, so the overlap
- * cannot notify anyone twice.
+ * Because this runs once a day, subscribing also enqueues immediately. A
+ * subscriber who arrives after today's run would otherwise wait until
+ * tomorrow's before anything was queued for them at all.
  */
-
-const WINDOW_HOURS = 26;
-const MAX_QSTASH_DELAY_DAYS = 7;
 
 export const maxDuration = 60;
 
@@ -50,25 +41,14 @@ export async function GET(request: Request) {
     );
   }
 
-  const token = process.env.QSTASH_TOKEN;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
-  if (!token || !siteUrl) {
+  if (!schedulingConfigured()) {
     return NextResponse.json(
       { skipped: "QSTASH_TOKEN and NEXT_PUBLIC_SITE_URL are required." },
       { status: 200 },
     );
   }
 
-  const qstash = new Client({ token });
-  const callback = `${siteUrl.replace(/\/$/, "")}/api/push/fire`;
-
   const now = new Date();
-  const horizon = new Date(now.getTime() + WINDOW_HOURS * 3600 * 1000);
-  const maxDelay = new Date(
-    now.getTime() + MAX_QSTASH_DELAY_DAYS * 24 * 3600 * 1000,
-  );
-
   const subscriptions = await listSubscriptions();
 
   let scheduled = 0;
@@ -76,58 +56,10 @@ export async function GET(request: Request) {
   const failures: string[] = [];
 
   for (const record of subscriptions) {
-    // The subscriber's own calendar day, and the one after it, so the window
-    // can span midnight wherever they are.
-    const today = localDateInZone(record.timeZone, now);
-    const tomorrowInstant = new Date(now.getTime() + 24 * 3600 * 1000);
-    const tomorrow = localDateInZone(record.timeZone, tomorrowInstant);
-
-    for (const day of [today, tomorrow]) {
-      const times = getDayTimes(
-        record.latitude,
-        record.longitude,
-        dateForLocalDay(day.year, day.month, day.day),
-        { method: record.method, madhab: record.madhab },
-      );
-
-      for (const prayer of record.prayers) {
-        const at = times[prayer as PrayerKey];
-        if (!at || Number.isNaN(at.getTime())) continue;
-        if (at <= now || at > horizon || at > maxDelay) {
-          skipped += 1;
-          continue;
-        }
-
-        const claimed = await claimSchedule(
-          record.id,
-          formatLocalDay(day),
-          prayer,
-        );
-        if (!claimed) {
-          skipped += 1;
-          continue;
-        }
-
-        try {
-          await qstash.publishJSON({
-            url: callback,
-            body: {
-              subscriptionId: record.id,
-              prayer,
-              at: at.toISOString(),
-            },
-            // Absolute delivery time in whole seconds, so the notification
-            // lands on the prayer rather than near it.
-            notBefore: Math.floor(at.getTime() / 1000),
-          });
-          scheduled += 1;
-        } catch (error) {
-          failures.push(
-            `${record.id}:${prayer}: ${error instanceof Error ? error.message : "unknown"}`,
-          );
-        }
-      }
-    }
+    const outcome = await scheduleUpcoming(record, now);
+    scheduled += outcome.scheduled;
+    skipped += outcome.skipped;
+    failures.push(...outcome.failures);
   }
 
   return NextResponse.json({
@@ -138,7 +70,7 @@ export async function GET(request: Request) {
     // Echoed so the address QStash will call back can be confirmed without
     // waiting for a prayer to pass. A stale value here, after a rename or a
     // domain change, makes every notification fail with nothing to see.
-    callback,
+    callback: callbackUrl(),
     ranAt: now.toISOString(),
   });
 }

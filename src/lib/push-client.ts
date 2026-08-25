@@ -301,7 +301,19 @@ export async function enablePush({
     throw await serverError(response, "saveFailed", "The subscription could not be saved.");
   }
 
-  return subscription;
+  // How many prayers were queued right now. Zero is not a failure: it means
+  // none of the chosen prayers are still ahead today, and the daily run will
+  // pick up tomorrow's. Saying so is better than an unexplained silence.
+  const body = (await response.json().catch(() => ({}))) as {
+    scheduled?: number;
+    scheduling?: boolean;
+  };
+
+  return {
+    subscription,
+    scheduled: body.scheduled ?? 0,
+    scheduling: body.scheduling !== false,
+  };
 }
 
 export async function disablePush() {
