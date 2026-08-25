@@ -31,6 +31,66 @@ const UR: Record<string, string> = {
   "nav.openMenu": "مینو کھولیں",
   "nav.changeTheme": "رنگ تبدیل کریں",
   "nav.language": "زبان",
+  "push.notify":
+    "سائٹ بند ہونے پر بھی مجھے اطلاع دیں",
+  "push.installHint":
+    "سب سے بھروسہ مند اطلاع کے لیے ہدایہ کو اپنی ہوم اسکرین پر شامل کریں۔",
+  "push.toggleAria":
+    "پس منظر میں نماز کی اطلاعات",
+  "push.unsupported":
+    "یہ براؤزر پس منظر میں اطلاعات نہیں بھیج سکتا۔ ہدایہ کھلی ہو تو الارم پھر بھی بجتا ہے۔",
+  "push.notConfiguredPanel":
+    "اس تنصیب پر پس منظر کی اطلاعات مرتب نہیں ہیں۔ ہدایہ کھلی ہو تو نیچے والا الارم پھر بھی کام کرتا ہے۔",
+  "push.stored":
+    "آپ کے متناسقات اور ٹائم زون سرور پر محفوظ ہیں تاکہ کوئی براؤزر نہ چل رہا ہو تب بھی نماز کے اوقات نکالے جا سکیں۔ اسے بند کرنے پر یہ حذف ہو جاتے ہیں۔",
+  "push.willStore":
+    "اسے آن کرنے سے آپ کے متناسقات اور ٹائم زون سرور کو بھیجے جاتے ہیں۔ یہ اس لیے درکار ہیں کہ کوئی براؤزر نہ چل رہا ہو تب بھی نماز کے اوقات نکالے جا سکیں، اور بند کرنے پر حذف ہو جاتے ہیں۔",
+  "push.test":
+    "آزمائشی اطلاع بھیجیں",
+  "push.testSending":
+    "بھیجی جا رہی ہے",
+  "push.testSent":
+    "بھیج دی گئی۔ یہ چند سیکنڈ میں پہنچ جانی چاہیے، چاہے یہ ٹیب بند ہو۔",
+  "push.testArrived":
+    "پش اس آلے تک پہنچ گیا۔ اگر کوئی اطلاع ظاہر نہیں ہوئی تو نظام اسے چھپا رہا ہے: اپنی سسٹم سیٹنگز میں براؤزر کی اطلاعات دیکھیں، اور ڈسٹرب نہ کریں بند کریں۔",
+  "push.needLocation":
+    "پہلے اپنا مقام مقرر کریں، تاکہ نماز کے اوقات نکالے جا سکیں۔",
+  "push.needPrayer":
+    "نیچے سے کم از کم ایک نماز چنیں۔",
+  "push.err.unsupported":
+    "یہ براؤزر پس منظر میں اطلاعات نہیں بھیج سکتا۔",
+  "push.err.notConfigured":
+    "اس تنصیب پر پس منظر کی اطلاعات مرتب نہیں ہیں۔",
+  "push.err.permissionDenied":
+    "اطلاعات کی اجازت نہیں دی گئی۔ سائٹ کھلی ہو تو آپ الارم پھر بھی استعمال کر سکتے ہیں۔",
+  "push.err.workerFailed":
+    "سروس ورکر رجسٹر نہیں ہو سکا۔",
+  "push.err.badKey":
+    "اس تنصیب کی اطلاعاتی کلید درست نہیں، اس لیے یہ بلڈ سبسکرائب نہیں کر سکتا۔",
+  "push.err.braveBlocked":
+    "بریو پش سروس کو اجازت ملنے تک روکتا ہے۔ brave://settings/privacy کھولیں، Use Google services for push messaging آن کریں، پھر بریو دوبارہ چلائیں اور کوشش کریں۔",
+  "push.err.pushServiceUnreachable":
+    "براؤزر اپنی پش سروس تک نہیں پہنچ سکا، اس لیے اطلاعات رجسٹر نہیں ہو سکتیں۔ عام طور پر یہ براؤزر کی کوئی ترتیب یا نیٹ ورک کی رکاوٹ ہوتی ہے، ہدایہ کی خرابی نہیں۔",
+  "push.err.notAllowed":
+    "اس سائٹ کے لیے، یا آپریٹنگ سسٹم کی طرف سے، اطلاعات بند ہیں۔ براؤزر میں ہدایہ کے لیے اجازت دیں، اور سسٹم سیٹنگز میں براؤزر کی اطلاعات بھی دیکھیں۔",
+  "push.err.refused":
+    "براؤزر نے سبسکرپشن سے انکار کر دیا۔",
+  "push.err.saveFailed":
+    "سبسکرپشن محفوظ نہیں ہو سکی۔",
+  "push.err.notSubscribed":
+    "یہ آلہ سبسکرائب نہیں ہے۔ اطلاعات بند کر کے دوبارہ آن کریں۔",
+  "push.err.incomplete":
+    "پش سبسکرپشن نامکمل ہے۔",
+  "push.err.badCoordinates":
+    "نماز کے اوقات نکالنے کے لیے درست متناسقات درکار ہیں۔",
+  "push.err.noPrayers":
+    "کم از کم ایک نماز چنیں جس کی اطلاع دی جائے۔",
+  "push.err.badRequest":
+    "درخواست سمجھ نہیں آئی۔",
+  "push.err.deliveryGone":
+    "براؤزر نے یہ سبسکرپشن ترک کر دی ہے۔ اطلاعات بند کر کے دوبارہ آن کریں۔",
+  "push.err.deliveryFailed":
+    "پش سروس نے پیغام قبول نہیں کیا۔",
   "welcome.tagline":
     "نماز کے اوقات، قرآن، اور ہجری تقویم، سب ایک پرسکون جگہ پر۔",
   "welcome.inside": "اندر کیا ہے",
@@ -211,6 +271,66 @@ const EN: Record<string, string> = {
   "nav.openMenu": "Open menu",
   "nav.changeTheme": "Change theme",
   "nav.language": "Language",
+  "push.notify":
+    "Notify me when the site is closed",
+  "push.installHint":
+    "Install Hidayah to your home screen for the most reliable delivery.",
+  "push.toggleAria":
+    "Background prayer notifications",
+  "push.unsupported":
+    "This browser cannot deliver notifications in the background. The alarm still sounds while Hidayah is open in a tab.",
+  "push.notConfiguredPanel":
+    "Background notifications are not configured on this deployment. The alarm below still works whenever Hidayah is open.",
+  "push.stored":
+    "Your coordinates and time zone are stored on the server so prayer times can be worked out while no browser is running. Turning this off deletes them.",
+  "push.willStore":
+    "Turning this on sends your coordinates and time zone to the server. They are needed to work out prayer times when no browser is running, and are deleted when you turn it off.",
+  "push.test":
+    "Send a test notification",
+  "push.testSending":
+    "Sending",
+  "push.testSent":
+    "Sent. It should arrive within a few seconds, even with this tab closed.",
+  "push.testArrived":
+    "The push reached this device. If no notification appeared, the system is hiding it: check notifications for your browser in your system settings, and turn off Do not disturb.",
+  "push.needLocation":
+    "Set your location first, so prayer times can be computed.",
+  "push.needPrayer":
+    "Choose at least one prayer below.",
+  "push.err.unsupported":
+    "This browser cannot deliver background notifications.",
+  "push.err.notConfigured":
+    "Background notifications are not configured on this deployment.",
+  "push.err.permissionDenied":
+    "Notification permission was declined. You can still use the alarm while the site is open.",
+  "push.err.workerFailed":
+    "The service worker could not be registered.",
+  "push.err.badKey":
+    "The notification key on this deployment is not valid, so this build cannot subscribe.",
+  "push.err.braveBlocked":
+    "Brave blocks the push service until you allow it. Open brave://settings/privacy, turn on Use Google services for push messaging, then restart Brave and try again.",
+  "push.err.pushServiceUnreachable":
+    "The browser could not reach its push service, so notifications cannot be registered. This is usually a browser setting or a network that blocks it rather than a fault in Hidayah.",
+  "push.err.notAllowed":
+    "Notifications are blocked for this site, or by the operating system. Allow them for Hidayah in the browser, and check that notifications are enabled for your browser in system settings.",
+  "push.err.refused":
+    "The browser refused the subscription.",
+  "push.err.saveFailed":
+    "The subscription could not be saved.",
+  "push.err.notSubscribed":
+    "This device is not subscribed. Turn notifications off and on again.",
+  "push.err.incomplete":
+    "The push subscription is incomplete.",
+  "push.err.badCoordinates":
+    "Valid coordinates are required to compute prayer times.",
+  "push.err.noPrayers":
+    "Choose at least one prayer to be notified about.",
+  "push.err.badRequest":
+    "The request was not understood.",
+  "push.err.deliveryGone":
+    "The browser has discarded this subscription. Turn notifications off and on again.",
+  "push.err.deliveryFailed":
+    "The push service refused the message.",
   "welcome.tagline":
     "Prayer times, the Quran, and the Hijri calendar, kept in one quiet place.",
   "welcome.inside": "What is inside",

@@ -17,6 +17,7 @@ import {
 import type { StoredLocation } from "@/lib/location";
 import { useMounted } from "@/lib/hooks";
 import type { Settings } from "@/lib/settings";
+import { useLanguage } from "@/lib/i18n";
 
 type PushControlProps = {
   location: StoredLocation | null;
@@ -24,9 +25,28 @@ type PushControlProps = {
 };
 
 type Status = "unknown" | "off" | "on" | "working";
+/**
+ * The sentence for a failure, chosen by its code.
+ *
+ * The code travels from wherever the failure happened, including the server,
+ * so the reader is told what went wrong in their own language. Anything the
+ * platform added is appended, since that part cannot be translated and is
+ * often the only thing that identifies an unusual fault.
+ */
+function describePushError(
+  t: (key: string) => string,
+  caught: unknown,
+): string {
+  if (!(caught instanceof PushError)) return t("push.err.refused");
+
+  const sentence = t(`push.err.${caught.code}`);
+  return caught.detail ? `${sentence} (${caught.detail})` : sentence;
+}
+
 type TestState = "idle" | "sending" | "sent" | "arrived";
 
 export function PushControl({ location, settings }: PushControlProps) {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<Status>("unknown");
   const [error, setError] = useState<string | null>(null);
   const [testState, setTestState] = useState<TestState>("idle");
@@ -75,11 +95,11 @@ export function PushControl({ location, settings }: PushControlProps) {
       }
 
       if (!location) {
-        setError("Set your location first, so prayer times can be computed.");
+        setError(t("push.needLocation"));
         return;
       }
       if (enabledPrayers.length === 0) {
-        setError("Choose at least one prayer below.");
+        setError(t("push.needPrayer"));
         return;
       }
 
@@ -93,11 +113,7 @@ export function PushControl({ location, settings }: PushControlProps) {
         });
         setStatus("on");
       } catch (caught) {
-        setError(
-          caught instanceof PushError
-            ? caught.message
-            : "Notifications could not be enabled.",
-        );
+        setError(describePushError(t, caught));
         setStatus("off");
       }
     },
@@ -114,11 +130,7 @@ export function PushControl({ location, settings }: PushControlProps) {
       setTestState("sent");
     } catch (caught) {
       setTestState("idle");
-      setError(
-        caught instanceof PushError
-          ? caught.message
-          : "The test notification could not be sent.",
-      );
+      setError(describePushError(t, caught));
     }
   }, []);
 
@@ -134,8 +146,7 @@ export function PushControl({ location, settings }: PushControlProps) {
   if (!supported) {
     return (
       <p className="text-sm leading-relaxed text-ink-dim">
-        This browser cannot deliver notifications in the background. The alarm
-        still sounds while Hidayah is open in a tab.
+        {t("push.unsupported")}
       </p>
     );
   }
@@ -144,37 +155,32 @@ export function PushControl({ location, settings }: PushControlProps) {
     <div>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-ink">Notify me when the site is closed</p>
+          <p className="text-sm text-ink">{t("push.notify")}</p>
           <p className="mt-1 text-xs leading-relaxed text-ink-faint">
-            Install Hidayah to your home screen for the most reliable delivery.
+            {t("push.installHint")}
           </p>
         </div>
         <Toggle
           checked={status === "on"}
           onChange={(next) => void toggle(next)}
           disabled={status === "working" || !configured}
-          label="Background prayer notifications"
+          label={t("push.toggleAria")}
         />
       </div>
 
       {!configured ? (
         <p className="mt-4 rounded-[10px] border border-line bg-surface-2 px-3.5 py-3 text-xs leading-relaxed text-ink-dim">
-          Background notifications are not configured on this deployment. The
-          alarm below still works whenever Hidayah is open.
+          {t("push.notConfiguredPanel")}
         </p>
       ) : null}
 
       {status === "on" ? (
         <p className="mt-4 rounded-[10px] border border-line bg-surface-2 px-3.5 py-3 text-xs leading-relaxed text-ink-dim">
-          Your coordinates and time zone are stored on the server so prayer
-          times can be worked out while no browser is running. Turning this off
-          deletes them.
+          {t("push.stored")}
         </p>
       ) : (
         <p className="mt-4 text-xs leading-relaxed text-ink-faint">
-          Turning this on sends your coordinates and time zone to the server.
-          They are needed to work out prayer times when no browser is running,
-          and are deleted when you turn it off.
+          {t("push.willStore")}
         </p>
       )}
 
@@ -186,19 +192,16 @@ export function PushControl({ location, settings }: PushControlProps) {
             disabled={testState === "sending"}
             className="rounded-full border border-line px-4 py-2 text-xs text-ink-dim transition-colors duration-300 hover:border-gold hover:text-gold-ink disabled:opacity-45"
           >
-            {testState === "sending" ? "Sending" : "Send a test notification"}
+            {testState === "sending" ? t("push.testSending") : t("push.test")}
           </button>
           {testState === "sent" ? (
             <span className="text-xs text-ink-faint">
-              Sent. It should arrive within a few seconds, even with this tab
-              closed.
+              {t("push.testSent")}
             </span>
           ) : null}
           {testState === "arrived" ? (
             <span className="text-xs text-gold-ink">
-              The push reached this device. If no notification appeared, the
-              system is hiding it: check notifications for your browser in
-              Windows settings, and turn off Do not disturb.
+              {t("push.testArrived")}
             </span>
           ) : null}
         </div>

@@ -21,7 +21,10 @@ import {
 export async function POST(request: Request) {
   if (!pushStorageConfigured() || !vapidConfigured()) {
     return NextResponse.json(
-      { error: "Background notifications are not configured on this deployment." },
+      {
+        error: "Background notifications are not configured on this deployment.",
+        code: "notConfigured",
+      },
       { status: 503 },
     );
   }
@@ -30,12 +33,12 @@ export async function POST(request: Request) {
   try {
     ({ endpoint } = (await request.json()) as { endpoint?: unknown });
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body.", code: "badRequest" }, { status: 400 });
   }
 
   if (typeof endpoint !== "string" || !endpoint) {
     return NextResponse.json(
-      { error: "The push subscription is incomplete." },
+      { error: "The push subscription is incomplete.", code: "incomplete" },
       { status: 400 },
     );
   }
@@ -43,7 +46,10 @@ export async function POST(request: Request) {
   const record = await getSubscription(subscriptionId(endpoint));
   if (!record) {
     return NextResponse.json(
-      { error: "This device is not subscribed. Turn notifications off and on again." },
+      {
+        error: "This device is not subscribed. Turn notifications off and on again.",
+        code: "notSubscribed",
+      },
       { status: 404 },
     );
   }
@@ -58,6 +64,7 @@ export async function POST(request: Request) {
         result === "gone"
           ? "The browser has discarded this subscription. Turn notifications off and on again."
           : `The push service refused the message. ${detail ?? ""}`.trim(),
+      code: result === "gone" ? "deliveryGone" : "deliveryFailed",
     },
     { status: 502 },
   );

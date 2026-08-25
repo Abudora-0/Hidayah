@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
+import { GirihCorner } from "@/components/ornament/GirihCorner";
 import { GirihRule } from "@/components/ornament/GirihRule";
 import { LocationBar } from "@/components/prayer/LocationBar";
 import { Counter } from "@/components/ui/Counter";
@@ -39,8 +40,13 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="hd-card p-6">
-      <div className="flex items-baseline justify-between gap-3">
+    <section className="hd-card relative overflow-hidden p-6">
+      {/* Cornered rather than framed, on opposite corners only, so the panel
+          is marked without being boxed in. */}
+      <GirihCorner corner="top-left" />
+      <GirihCorner corner="bottom-right" />
+
+      <div className="relative flex items-baseline justify-between gap-3">
         <h2 className="font-kufi text-sm uppercase tracking-[0.22em] text-ink-faint">
           {title}
         </h2>
@@ -48,7 +54,7 @@ function Section({
           {arabic}
         </span>
       </div>
-      <div className="mt-5">{children}</div>
+      <div className="relative mt-5">{children}</div>
     </section>
   );
 }

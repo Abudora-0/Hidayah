@@ -39,7 +39,42 @@ export async function currentSubscription() {
   return registration.pushManager.getSubscription();
 }
 
-export class PushError extends Error {}
+/**
+ * Why enabling or testing failed, as something translatable.
+ *
+ * The message on the error stays as readable English, so anything that has no
+ * translation yet still says something useful rather than showing a key.
+ */
+export type PushErrorCode =
+  | "unsupported"
+  | "notConfigured"
+  | "permissionDenied"
+  | "workerFailed"
+  | "badKey"
+  | "braveBlocked"
+  | "pushServiceUnreachable"
+  | "notAllowed"
+  | "refused"
+  | "saveFailed"
+  | "notSubscribed"
+  | "incomplete"
+  | "badCoordinates"
+  | "noPrayers"
+  | "badRequest"
+  | "deliveryGone"
+  | "deliveryFailed";
+
+export class PushError extends Error {
+  readonly code: PushErrorCode;
+  /** What the platform or the server said, when that adds anything. */
+  readonly detail?: string;
+
+  constructor(code: PushErrorCode, message: string, detail?: string) {
+    super(message);
+    this.code = code;
+    this.detail = detail;
+  }
+}
 
 /** Whether a subscription was created against the key we are signing with. */
 function matchesKey(subscription: PushSubscription, key: Uint8Array) {
@@ -89,33 +124,59 @@ async function isBrave() {
  * the browser could not reach the service that delivers pushes, which is a
  * setting or a network, so the message points at those.
  */
-async function explainSubscribeFailure(caught: unknown) {
+async function explainSubscribeFailure(caught: unknown): Promise<PushError> {
   const detail = describe(caught);
 
   if (caught instanceof DOMException && caught.name === "AbortError") {
     if (await isBrave()) {
-      return (
+      return new PushError(
+        "braveBlocked",
         "Brave blocks the push service until you allow it. Open " +
-        "brave://settings/privacy, turn on \"Use Google services for push " +
-        "messaging\", then restart Brave and try again."
+          "brave://settings/privacy, turn on \"Use Google services for push " +
+          "messaging\", then restart Brave and try again.",
       );
     }
-    return (
+    return new PushError(
+      "pushServiceUnreachable",
       "The browser could not reach its push service, so notifications cannot " +
-      "be registered. This is usually a browser setting or a network that " +
-      `blocks it rather than a fault in Hidayah. (${detail})`
+        "be registered. This is usually a browser setting or a network that " +
+        "blocks it rather than a fault in Hidayah.",
+      detail,
     );
   }
 
   if (caught instanceof DOMException && caught.name === "NotAllowedError") {
-    return (
+    return new PushError(
+      "notAllowed",
       "Notifications are blocked for this site, or by the operating system. " +
-      "Allow them for Hidayah in the browser and check that notifications " +
-      "are enabled for your browser in system settings."
+        "Allow them for Hidayah in the browser and check that notifications " +
+        "are enabled for your browser in system settings.",
     );
   }
 
-  return `The browser refused the subscription. ${detail}`;
+  return new PushError(
+    "refused",
+    "The browser refused the subscription.",
+    detail,
+  );
+}
+
+/**
+ * Turns a refusal from our own API into a translatable error.
+ *
+ * The route names the reason in a code; its English sentence is kept as the
+ * message so an untranslated case still reads properly.
+ */
+async function serverError(
+  response: Response,
+  fallback: PushErrorCode,
+  fallbackMessage: string,
+) {
+  const body = (await response.json().catch(() => ({}))) as {
+    error?: string;
+    code?: PushErrorCode;
+  };
+  return new PushError(body.code ?? fallback, body.error || fallbackMessage);
 }
 
 /** Whatever the platform threw, in a form worth showing someone. */
@@ -148,12 +209,16 @@ export async function enablePush({
   prayers,
 }: EnableArgs) {
   if (!pushSupported()) {
-    throw new PushError("This browser cannot deliver background notifications.");
+    throw new PushError(
+      "unsupported",
+      "This browser cannot deliver background notifications.",
+    );
   }
 
   const key = pushPublicKey();
   if (!key) {
     throw new PushError(
+      "notConfigured",
       "Background notifications are not configured on this deployment.",
     );
   }
@@ -161,6 +226,7 @@ export async function enablePush({
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
     throw new PushError(
+      "permissionDenied",
       "Notification permission was declined. You can still use the alarm while the site is open.",
     );
   }
@@ -170,11 +236,16 @@ export async function enablePush({
     registration = await registerServiceWorker();
   } catch (caught) {
     throw new PushError(
-      `The service worker could not be registered. ${describe(caught)}`,
+      "workerFailed",
+      "The service worker could not be registered.",
+      describe(caught),
     );
   }
   if (!registration) {
-    throw new PushError("The service worker could not be registered.");
+    throw new PushError(
+      "workerFailed",
+      "The service worker could not be registered.",
+    );
   }
 
   await navigator.serviceWorker.ready;
@@ -184,6 +255,7 @@ export async function enablePush({
     applicationServerKey = urlBase64ToUint8Array(key);
   } catch {
     throw new PushError(
+      "badKey",
       "The configured VAPID public key is not valid base64url, so this build cannot subscribe.",
     );
   }
@@ -208,7 +280,7 @@ export async function enablePush({
   } catch (caught) {
     // The browser refuses for reasons it will only state in the exception,
     // and hiding that behind a generic sentence leaves nothing to act on.
-    throw new PushError(await explainSubscribeFailure(caught));
+    throw await explainSubscribeFailure(caught);
   }
 
   const response = await fetch("/api/push/subscribe", {
@@ -226,8 +298,7 @@ export async function enablePush({
   });
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new PushError(body.error || "The subscription could not be saved.");
+    throw await serverError(response, "saveFailed", "The subscription could not be saved.");
   }
 
   return subscription;
@@ -261,7 +332,7 @@ export async function disablePush() {
 export async function sendTestPush() {
   const subscription = await currentSubscription();
   if (!subscription) {
-    throw new PushError("This device is not subscribed yet.");
+    throw new PushError("notSubscribed", "This device is not subscribed yet.");
   }
 
   const response = await fetch("/api/push/test", {
@@ -271,7 +342,6 @@ export async function sendTestPush() {
   });
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new PushError(body.error || "The test notification could not be sent.");
+    throw await serverError(response, "deliveryFailed", "The test notification could not be sent.");
   }
 }

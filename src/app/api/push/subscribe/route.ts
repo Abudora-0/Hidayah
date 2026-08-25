@@ -27,6 +27,7 @@ export async function POST(request: Request) {
       {
         error:
           "Background notifications are not configured on this deployment. The in tab alarm still works while the site is open.",
+        code: "notConfigured",
       },
       { status: 503 },
     );
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as Body;
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request body.", code: "badRequest" }, { status: 400 });
   }
 
   const endpoint = body.subscription?.endpoint;
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 
   if (!endpoint || !p256dh || !auth) {
     return NextResponse.json(
-      { error: "The push subscription is incomplete." },
+      { error: "The push subscription is incomplete.", code: "incomplete" },
       { status: 400 },
     );
   }
@@ -57,7 +58,10 @@ export async function POST(request: Request) {
     Math.abs(body.longitude) > 180
   ) {
     return NextResponse.json(
-      { error: "Valid coordinates are required to compute prayer times." },
+      {
+        error: "Valid coordinates are required to compute prayer times.",
+        code: "badCoordinates",
+      },
       { status: 400 },
     );
   }
@@ -68,7 +72,7 @@ export async function POST(request: Request) {
 
   if (prayers.length === 0) {
     return NextResponse.json(
-      { error: "Choose at least one prayer to be notified about." },
+      { error: "Choose at least one prayer to be notified about.", code: "noPrayers" },
       { status: 400 },
     );
   }
