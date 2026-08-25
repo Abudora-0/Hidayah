@@ -89,7 +89,14 @@ export async function scheduleUpcoming(
     return outcome;
   }
 
-  const qstash = new Client({ token: process.env.QSTASH_TOKEN as string });
+  // QStash accounts can be pinned to a region, and a token issued for one is
+  // not accepted by the global endpoint. The address is configured alongside
+  // the token, so it is used when it is given rather than assumed.
+  const baseUrl = process.env.QSTASH_URL?.trim();
+  const qstash = new Client({
+    token: process.env.QSTASH_TOKEN as string,
+    ...(baseUrl ? { baseUrl } : {}),
+  });
   const callback = callbackUrl();
 
   const horizon = new Date(now.getTime() + WINDOW_HOURS * 3600 * 1000);
