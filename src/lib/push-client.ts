@@ -307,6 +307,7 @@ export async function enablePush({
   const body = (await response.json().catch(() => ({}))) as {
     scheduled?: number;
     failed?: number;
+    failure?: string | null;
     scheduling?: boolean;
   };
 
@@ -314,6 +315,7 @@ export async function enablePush({
     subscription,
     scheduled: body.scheduled ?? 0,
     failed: body.failed ?? 0,
+    failure: body.failure ?? null,
     scheduling: body.scheduling !== false,
   };
 }

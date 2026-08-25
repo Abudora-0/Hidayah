@@ -111,6 +111,9 @@ export async function POST(request: Request) {
     // used to leave the count at zero with no way to tell that apart from a
     // day with no prayers left.
     failed: failures.length,
+    // The reason itself, not just that there was one. Without it the only way
+    // to learn why the handover was refused is to read the deployment's logs.
+    failure: failures[0] ?? null,
     scheduling: schedulingConfigured(),
   });
 }

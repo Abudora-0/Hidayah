@@ -40,6 +40,36 @@ export function callbackUrl() {
 }
 
 /**
+ * Why the callback address cannot be used, if it cannot.
+ *
+ * QStash calls back over the public internet, so it needs an absolute address.
+ * A site URL without a scheme, or pointing at this machine, produces a
+ * callback it will refuse, and the refusal arrives as a generic publish error
+ * with nothing in it about the cause.
+ */
+export function callbackProblem(): string | null {
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
+  if (!siteUrl) return "NEXT_PUBLIC_SITE_URL is not set.";
+
+  let parsed: URL;
+  try {
+    parsed = new URL(siteUrl);
+  } catch {
+    return `NEXT_PUBLIC_SITE_URL is not an absolute address: ${siteUrl}. It needs the scheme, as in https://example.com`;
+  }
+
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    return `NEXT_PUBLIC_SITE_URL uses ${parsed.protocol}, which QStash cannot call.`;
+  }
+
+  if (/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(parsed.hostname)) {
+    return `NEXT_PUBLIC_SITE_URL points at ${parsed.hostname}, which QStash cannot reach from outside this machine.`;
+  }
+
+  return null;
+}
+
+/**
  * Queues every prayer this subscriber has asked for that falls inside the
  * window and has not been claimed already.
  */
@@ -50,6 +80,14 @@ export async function scheduleUpcoming(
   const outcome: ScheduleOutcome = { scheduled: 0, skipped: 0, failures: [] };
 
   if (!schedulingConfigured()) return outcome;
+
+  // Caught here rather than once per prayer, since it is the same answer every
+  // time and the publish error alone never says which part was wrong.
+  const problem = callbackProblem();
+  if (problem) {
+    outcome.failures.push(problem);
+    return outcome;
+  }
 
   const qstash = new Client({ token: process.env.QSTASH_TOKEN as string });
   const callback = callbackUrl();
