@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 import { GirihRule } from "@/components/ornament/GirihRule";
-import { Lattice } from "@/components/ornament/Lattice";
 import { Wordmark } from "@/components/ornament/Wordmark";
 import { CountdownRing } from "./CountdownRing";
 import { LocationBar } from "./LocationBar";
@@ -96,7 +95,6 @@ export function PrayerDashboard() {
         playSound={settings.alarm.playAdhan}
       />
 
-      <Lattice className="text-gold" scale={104} opacity={0.05} />
 
       <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="flex flex-col items-center gap-5 text-center">
@@ -268,7 +266,6 @@ function LocationOnboarding({
 
   return (
     <div className="relative overflow-hidden">
-      <Lattice className="text-gold" scale={96} opacity={0.06} />
 
       <div className="relative mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-20 text-center sm:px-6">
         <Wordmark layout="stacked" size={40} />

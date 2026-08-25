@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { HijriCalendar } from "@/components/calendar/HijriCalendar";
 import { Wordmark } from "@/components/ornament/Wordmark";
-import { Lattice } from "@/components/ornament/Lattice";
 
 export const metadata: Metadata = {
   title: "Calendar",
@@ -13,7 +12,6 @@ export const metadata: Metadata = {
 export default function CalendarPage() {
   return (
     <div className="relative">
-      <Lattice className="text-gold" scale={110} opacity={0.045} />
 
       <div className="relative mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
         <header className="flex flex-col items-center text-center">

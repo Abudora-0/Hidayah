@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { Lattice } from "@/components/ornament/Lattice";
 import { TasbihCounter } from "@/components/tasbih/TasbihCounter";
 
 export const metadata: Metadata = {
@@ -12,7 +11,6 @@ export const metadata: Metadata = {
 export default function TasbihPage() {
   return (
     <div className="relative">
-      <Lattice className="text-gold" scale={104} opacity={0.05} />
 
       <div className="relative mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
         <header className="mb-10 text-center">

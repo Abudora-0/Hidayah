@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { Wordmark } from "@/components/ornament/Wordmark";
-import { Lattice } from "@/components/ornament/Lattice";
 import { QuranIndexTools } from "@/components/quran/QuranIndexTools";
 import { SurahIndex } from "@/components/quran/SurahIndex";
 import { fetchSurahList } from "@/lib/quran";
@@ -20,7 +19,6 @@ export default async function QuranPage({
 
   return (
     <div className="relative">
-      <Lattice className="text-gold" scale={110} opacity={0.045} />
 
       <div className="relative mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <header className="flex flex-col items-center text-center">
