@@ -48,14 +48,24 @@ export function AyahMarker({
           strokeWidth="1.5"
         />
         {active ? (
-          <circle
-            cx="24"
-            cy="24"
-            r="17"
-            fill="currentColor"
-            opacity="0.14"
-            className="hd-breathe"
-          />
+          <>
+            {/* A steady wash behind the rosette, so the lit state reads even
+                where motion is turned off. */}
+            <circle cx="24" cy="24" r="17" fill="currentColor" opacity="0.13" />
+            {/* And a broken ring turning around it while the ayah is read. */}
+            <circle
+              cx="24"
+              cy="24"
+              r="21"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeDasharray="10 16"
+              opacity="0.85"
+              className="hd-turn"
+            />
+          </>
         ) : null}
       </svg>
       <span

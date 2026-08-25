@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { AyahMarker } from "@/components/ornament/AyahMarker";
+import { GirihCorner } from "@/components/ornament/GirihCorner";
 import { GirihRule } from "@/components/ornament/GirihRule";
 import type { Ayah, JuzAyah } from "@/lib/quran";
 
@@ -116,47 +117,81 @@ export function MushafView({
             </header>
           ) : null}
 
-          {/* One paragraph per run. This is what makes the text flow rather
-              than break into a stack of separate ayahs. */}
-          <p
-            dir="rtl"
-            lang="ar"
-            className="font-quran text-pretty text-ink"
-            style={{ fontSize: `${arabicSize}px`, lineHeight: 2.45 }}
-          >
-            {run.ayahs.map((ayah) => {
-              const isActive = activeAyah === ayah.globalNumber;
-              return (
-                <span
-                  key={ayah.globalNumber}
-                  id={`ayah-${ayah.numberInSurah}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onSelect(ayah)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onSelect(ayah);
-                    }
-                  }}
-                  aria-label={`Ayah ${ayah.numberInSurah}`}
-                  className={`scroll-mt-24 cursor-pointer rounded-[6px] transition-colors duration-500 ${
-                    isActive
-                      ? "bg-gold/15 text-gold-ink"
-                      : "hover:bg-surface-2/70 focus-visible:bg-surface-2"
-                  }`}
-                >
-                  {ayah.arabic}
-                  <AyahMarker
-                    number={ayah.numberInSurah}
-                    size={arabicSize * 1.2}
-                    active={isActive}
-                    className="mx-1.5 align-middle"
-                  />
-                </span>
-              );
-            })}
-          </p>
+          {/* The page.
+              
+              Ragged text is what a browser does by default and what a printed
+              copy never does, so the block is justified to both margins and
+              set inside a ruled frame, which is what makes it read as a page
+              rather than as a paragraph on a website. */}
+          <div className="relative overflow-hidden rounded-[14px] border border-line bg-surface-1 px-4 py-8 sm:px-9 sm:py-11">
+            <span
+              className="pointer-events-none absolute inset-2 rounded-[10px] border border-line/55"
+              aria-hidden="true"
+            />
+            <GirihCorner
+              corner="top-left"
+              size={34}
+              opacity={0.32}
+              className="m-1.5"
+            />
+            <GirihCorner
+              corner="bottom-right"
+              size={34}
+              opacity={0.32}
+              className="m-1.5"
+            />
+
+            <p
+              dir="rtl"
+              lang="ar"
+              className="font-quran relative text-ink"
+              style={{
+                // The chosen size is a ceiling rather than a fixed value. A
+                // narrow screen holds too few words per line for justification
+                // to space them sensibly, and the gaps grow absurd.
+                fontSize: `clamp(19px, 5.4vw, ${arabicSize}px)`,
+                lineHeight: 2.5,
+                textAlign: "justify",
+                // A last line stretched across the full measure looks like a
+                // mistake. Centring it is how a page of scripture closes.
+                textAlignLast: "center",
+                hyphens: "none",
+              }}
+            >
+              {run.ayahs.map((ayah) => {
+                const isActive = activeAyah === ayah.globalNumber;
+                return (
+                  <span
+                    key={ayah.globalNumber}
+                    id={`ayah-${ayah.numberInSurah}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onSelect(ayah)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onSelect(ayah);
+                      }
+                    }}
+                    aria-label={`Ayah ${ayah.numberInSurah}`}
+                    className={`scroll-mt-24 cursor-pointer rounded-[6px] transition-colors duration-500 ${
+                      isActive
+                        ? "bg-gold/15 text-gold-ink"
+                        : "hover:bg-surface-2/70 focus-visible:bg-surface-2"
+                    }`}
+                  >
+                    {ayah.arabic}
+                    <AyahMarker
+                      number={ayah.numberInSurah}
+                      size={arabicSize * 1.2}
+                      active={isActive}
+                      className="mx-1.5 align-middle"
+                    />
+                  </span>
+                );
+              })}
+            </p>
+          </div>
         </section>
       ))}
     </div>

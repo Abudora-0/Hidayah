@@ -540,6 +540,15 @@ select:hover {
   }
 }
 
+/* The ring that turns around a verse while it is being recited. Geometry in
+   motion, which suits an ornament built from geometry, rather than the throb
+   this replaced. */
+@keyframes hd-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes hd-spin-slow {
   to {
     transform: rotate(360deg);
@@ -589,6 +598,14 @@ select:hover {
 
 .hd-breathe {
   animation: hd-breathe 3.4s ease-in-out infinite;
+}
+
+.hd-turn {
+  /* SVG needs both of these before a CSS rotation happens about the shape's
+     own centre rather than the origin of the user space. */
+  transform-box: view-box;
+  transform-origin: center;
+  animation: hd-turn 7s linear infinite;
 }
 
 .hd-spin-slow {
