@@ -97,23 +97,45 @@ export async function listSubscriptions() {
   return alive;
 }
 
-/** Whether a prayer on a day has already been handed to QStash. */
+/** Reserved, but the handover to QStash has not been confirmed. */
+const PENDING = "pending";
+
+function scheduleKey(
+  subscriptionId: string,
+  localDate: string,
+  prayer: PrayerKey,
+) {
+  return `hidayah:sched:${subscriptionId}:${localDate}:${prayer}`;
+}
+
+/**
+ * Whether a prayer has genuinely been handed to QStash.
+ *
+ * A bare reservation does not count. Reserving happens before the handover,
+ * so treating one as done reports prayers as waiting that nothing will ever
+ * deliver, which is worse than reporting none at all.
+ */
 export async function isScheduleClaimed(
   subscriptionId: string,
   localDate: string,
   prayer: PrayerKey,
 ) {
   const store = redis();
-  const key = `hidayah:sched:${subscriptionId}:${localDate}:${prayer}`;
-  return (await store.get(key)) !== null;
+  const value = await store.get(scheduleKey(subscriptionId, localDate, prayer));
+  return value !== null && value !== PENDING && value !== 1;
 }
 
 /**
- * Marks one prayer on one day as already scheduled.
+ * Reserves one prayer on one day, so it is enqueued once and not twice.
  *
  * The daily cron enqueues a rolling window, so without this a prayer near the
- * window boundary could be enqueued twice and the user notified twice. Returns
- * true only for the first caller.
+ * window boundary could be enqueued twice and the user notified twice.
+ *
+ * A reservation that was never confirmed is handed out again. That state means
+ * the handover failed, or died part way, and the prayer would otherwise stay
+ * marked as done and be silently skipped for as long as the key survives. The
+ * risk is a repeat notification where a handover succeeded but its
+ * confirmation did not, which is a far smaller fault than silence.
  */
 export async function claimSchedule(
   subscriptionId: string,
@@ -121,7 +143,39 @@ export async function claimSchedule(
   prayer: PrayerKey,
 ) {
   const store = redis();
-  const key = `hidayah:sched:${subscriptionId}:${localDate}:${prayer}`;
-  const result = await store.set(key, 1, { nx: true, ex: 60 * 60 * 48 });
-  return result === "OK";
+  const key = scheduleKey(subscriptionId, localDate, prayer);
+
+  const fresh = await store.set(key, PENDING, { nx: true, ex: 60 * 60 * 48 });
+  if (fresh === "OK") return true;
+
+  const existing = await store.get(key);
+  if (existing === PENDING || existing === 1) {
+    await store.set(key, PENDING, { ex: 60 * 60 * 48 });
+    return true;
+  }
+
+  return false;
+}
+
+/** Records that QStash accepted the message, which is what confirms it. */
+export async function confirmSchedule(
+  subscriptionId: string,
+  localDate: string,
+  prayer: PrayerKey,
+  messageId: string,
+) {
+  const store = redis();
+  await store.set(scheduleKey(subscriptionId, localDate, prayer), messageId, {
+    ex: 60 * 60 * 48,
+  });
+}
+
+/** Gives the reservation back, so a later run can try the handover again. */
+export async function releaseSchedule(
+  subscriptionId: string,
+  localDate: string,
+  prayer: PrayerKey,
+) {
+  const store = redis();
+  await store.del(scheduleKey(subscriptionId, localDate, prayer));
 }

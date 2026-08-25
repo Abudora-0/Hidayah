@@ -54,6 +54,7 @@ export function PushControl({ location, settings }: PushControlProps) {
   const [queued, setQueued] = useState<number | null>(null);
   const [scheduling, setScheduling] = useState(true);
   const [nextAt, setNextAt] = useState<string | null>(null);
+  const [failed, setFailed] = useState(0);
 
   // Support cannot be tested on the server, and rendering the unsupported
   // branch there and the supported one after hydration is a mismatch. So the
@@ -111,7 +112,11 @@ export function PushControl({ location, settings }: PushControlProps) {
 
       setStatus("working");
       try {
-        const { scheduled, scheduling: canSchedule } = await enablePush({
+        const {
+          scheduled,
+          failed: failedCount,
+          scheduling: canSchedule,
+        } = await enablePush({
           location,
           method: settings.prayer.method,
           madhab: settings.prayer.madhab,
@@ -119,6 +124,7 @@ export function PushControl({ location, settings }: PushControlProps) {
         });
         setQueued(scheduled);
         setScheduling(canSchedule);
+        setFailed(failedCount);
         setStatus("on");
       } catch (caught) {
         setError(describePushError(t, caught));
@@ -210,6 +216,8 @@ export function PushControl({ location, settings }: PushControlProps) {
         <p className="mt-3 text-xs leading-relaxed text-ink-faint">
           {!scheduling
             ? t("push.schedulingOff")
+            : failed > 0 && queued === 0
+              ? t("push.queueFailed")
             : queued > 0
               ? t("push.queued").replace("{n}", String(queued)) +
                 (nextAt

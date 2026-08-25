@@ -98,7 +98,7 @@ export async function POST(request: Request) {
   // The cron runs once a day. Without this, anyone subscribing after it has
   // run is queued for nothing until the next one, and hears nothing at all in
   // the meantime, which reads as the feature being broken.
-  const { scheduled } = await scheduleUpcoming(record);
+  const { scheduled, failures } = await scheduleUpcoming(record);
 
   // Whether anything can be queued at all is reported separately from how
   // much was. Without it a deployment missing its scheduling configuration
@@ -107,6 +107,10 @@ export async function POST(request: Request) {
     id,
     prayers,
     scheduled,
+    // A handover that QStash refused is reported rather than swallowed. It
+    // used to leave the count at zero with no way to tell that apart from a
+    // day with no prayers left.
+    failed: failures.length,
     scheduling: schedulingConfigured(),
   });
 }

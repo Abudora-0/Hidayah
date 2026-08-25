@@ -53,6 +53,8 @@ const UR: Record<string, string> = {
     "یہ آلہ سبسکرائب ہے، مگر اس تنصیب پر نماز کے اوقات قطار میں نہیں لگ رہے، اس لیے خود سے کچھ نہیں پہنچے گا۔ آزمائشی اطلاع پھر بھی کام کرتی ہے۔",
   "push.queuedNext":
     "اگلی {time} پر متوقع ہے۔",
+  "push.queueFailed":
+    "نمازیں شیڈیولر کے سپرد نہیں ہو سکیں، اس لیے خود سے کچھ نہیں پہنچے گا۔ اسے بند کر کے دوبارہ آن کرنے سے ایک بار پھر کوشش ہوگی۔",
   "push.test":
     "آزمائشی اطلاع بھیجیں",
   "push.testSending":
@@ -301,6 +303,8 @@ const EN: Record<string, string> = {
     "This device is subscribed, but prayer times are not being queued on this deployment, so nothing will arrive on its own. A test notification still works.",
   "push.queuedNext":
     "The next is due at {time}.",
+  "push.queueFailed":
+    "The prayers could not be handed to the scheduler, so nothing will arrive on its own. Turning this off and on again will try once more.",
   "push.test":
     "Send a test notification",
   "push.testSending":

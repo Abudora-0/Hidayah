@@ -306,12 +306,14 @@ export async function enablePush({
   // pick up tomorrow's. Saying so is better than an unexplained silence.
   const body = (await response.json().catch(() => ({}))) as {
     scheduled?: number;
+    failed?: number;
     scheduling?: boolean;
   };
 
   return {
     subscription,
     scheduled: body.scheduled ?? 0,
+    failed: body.failed ?? 0,
     scheduling: body.scheduling !== false,
   };
 }

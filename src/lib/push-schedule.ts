@@ -4,7 +4,9 @@ import { getDayTimes, type PrayerKey } from "./prayer";
 import { dateForLocalDay, formatLocalDay, localDateInZone } from "./push-server";
 import {
   claimSchedule,
+  confirmSchedule,
   isScheduleClaimed,
+  releaseSchedule,
   type PushSubscriptionRecord,
 } from "./push-store";
 
@@ -91,16 +93,26 @@ export async function scheduleUpcoming(
         continue;
       }
 
+      const localDay = formatLocalDay(day);
+
       try {
-        await qstash.publishJSON({
+        const message = await qstash.publishJSON({
           url: callback,
           body: { subscriptionId: record.id, prayer, at: at.toISOString() },
           // Absolute delivery time in whole seconds, so the notification lands
           // on the prayer rather than near it.
           notBefore: Math.floor(at.getTime() / 1000),
         });
+
+        // Only now is the prayer genuinely scheduled. Until this, the key is
+        // a reservation, and treating one as done is what let a failed
+        // handover mark a prayer as delivered and skip it thereafter.
+        await confirmSchedule(record.id, localDay, prayer, message.messageId);
         outcome.scheduled += 1;
       } catch (error) {
+        // Hand the reservation back, so the next run tries again rather than
+        // leaving the prayer marked as done and never sent.
+        await releaseSchedule(record.id, localDay, prayer);
         outcome.failures.push(
           `${record.id}:${prayer}: ${
             error instanceof Error ? error.message : "unknown"
