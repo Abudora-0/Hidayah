@@ -97,6 +97,17 @@ export async function listSubscriptions() {
   return alive;
 }
 
+/** Whether a prayer on a day has already been handed to QStash. */
+export async function isScheduleClaimed(
+  subscriptionId: string,
+  localDate: string,
+  prayer: PrayerKey,
+) {
+  const store = redis();
+  const key = `hidayah:sched:${subscriptionId}:${localDate}:${prayer}`;
+  return (await store.get(key)) !== null;
+}
+
 /**
  * Marks one prayer on one day as already scheduled.
  *

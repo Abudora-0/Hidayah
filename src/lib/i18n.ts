@@ -51,6 +51,8 @@ const UR: Record<string, string> = {
     "آج آپ کی چنی ہوئی کوئی نماز باقی نہیں۔ کل کی نمازیں روزانہ کے عمل میں قطار میں لگ جائیں گی۔",
   "push.schedulingOff":
     "یہ آلہ سبسکرائب ہے، مگر اس تنصیب پر نماز کے اوقات قطار میں نہیں لگ رہے، اس لیے خود سے کچھ نہیں پہنچے گا۔ آزمائشی اطلاع پھر بھی کام کرتی ہے۔",
+  "push.queuedNext":
+    "اگلی {time} پر متوقع ہے۔",
   "push.test":
     "آزمائشی اطلاع بھیجیں",
   "push.testSending":
@@ -297,6 +299,8 @@ const EN: Record<string, string> = {
     "None of your chosen prayers are still ahead today. Tomorrow's are queued at the daily run.",
   "push.schedulingOff":
     "This device is subscribed, but prayer times are not being queued on this deployment, so nothing will arrive on its own. A test notification still works.",
+  "push.queuedNext":
+    "The next is due at {time}.",
   "push.test":
     "Send a test notification",
   "push.testSending":

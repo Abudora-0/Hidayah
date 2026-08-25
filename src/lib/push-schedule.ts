@@ -2,7 +2,11 @@ import { Client } from "@upstash/qstash";
 
 import { getDayTimes, type PrayerKey } from "./prayer";
 import { dateForLocalDay, formatLocalDay, localDateInZone } from "./push-server";
-import { claimSchedule, type PushSubscriptionRecord } from "./push-store";
+import {
+  claimSchedule,
+  isScheduleClaimed,
+  type PushSubscriptionRecord,
+} from "./push-store";
 
 /**
  * Handing prayers to QStash, which calls back at the minute each one begins.
@@ -107,4 +111,54 @@ export async function scheduleUpcoming(
   }
 
   return outcome;
+}
+
+/**
+ * What is actually waiting to be delivered for this subscriber.
+ *
+ * Reporting the count only at the moment of subscribing meant it vanished on
+ * the next reload, which is exactly when someone wants to check. The claims
+ * are already in storage, so the answer can simply be read back.
+ */
+export async function describeQueue(
+  record: PushSubscriptionRecord,
+  now = new Date(),
+): Promise<{ queued: number; nextPrayer: string | null; nextAt: string | null }> {
+  const horizon = new Date(now.getTime() + WINDOW_HOURS * 3600 * 1000);
+
+  const today = localDateInZone(record.timeZone, now);
+  const tomorrow = localDateInZone(
+    record.timeZone,
+    new Date(now.getTime() + 24 * 3600 * 1000),
+  );
+
+  const waiting: { prayer: string; at: Date }[] = [];
+
+  for (const day of [today, tomorrow]) {
+    const times = getDayTimes(
+      record.latitude,
+      record.longitude,
+      dateForLocalDay(day.year, day.month, day.day),
+      { method: record.method, madhab: record.madhab },
+    );
+
+    for (const prayer of record.prayers) {
+      const at = times[prayer as PrayerKey];
+      if (!at || Number.isNaN(at.getTime())) continue;
+      if (at <= now || at > horizon) continue;
+      if (!(await isScheduleClaimed(record.id, formatLocalDay(day), prayer))) {
+        continue;
+      }
+      waiting.push({ prayer, at });
+    }
+  }
+
+  waiting.sort((a, b) => a.at.getTime() - b.at.getTime());
+  const next = waiting[0];
+
+  return {
+    queued: waiting.length,
+    nextPrayer: next ? next.prayer : null,
+    nextAt: next ? next.at.toISOString() : null,
+  };
 }

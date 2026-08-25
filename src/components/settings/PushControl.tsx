@@ -11,6 +11,7 @@ import {
   enablePush,
   pushPublicKey,
   pushSupported,
+  fetchPushQueue,
   onTestPushReceived,
   sendTestPush,
 } from "@/lib/push-client";
@@ -52,6 +53,7 @@ export function PushControl({ location, settings }: PushControlProps) {
   const [testState, setTestState] = useState<TestState>("idle");
   const [queued, setQueued] = useState<number | null>(null);
   const [scheduling, setScheduling] = useState(true);
+  const [nextAt, setNextAt] = useState<string | null>(null);
 
   // Support cannot be tested on the server, and rendering the unsupported
   // branch there and the supported one after hydration is a mismatch. So the
@@ -93,6 +95,7 @@ export function PushControl({ location, settings }: PushControlProps) {
           setStatus("off");
           setTestState("idle");
           setQueued(null);
+          setNextAt(null);
         }
         return;
       }
@@ -126,6 +129,20 @@ export function PushControl({ location, settings }: PushControlProps) {
   );
 
   useEffect(() => onTestPushReceived(() => setTestState("arrived")), []);
+
+  useEffect(() => {
+    if (status !== "on") return;
+    let cancelled = false;
+    fetchPushQueue().then((queue) => {
+      if (cancelled || !queue) return;
+      setQueued(queue.queued);
+      setScheduling(queue.scheduling);
+      setNextAt(queue.nextAt);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
 
   const test = useCallback(async () => {
     setError(null);
@@ -194,7 +211,18 @@ export function PushControl({ location, settings }: PushControlProps) {
           {!scheduling
             ? t("push.schedulingOff")
             : queued > 0
-              ? t("push.queued").replace("{n}", String(queued))
+              ? t("push.queued").replace("{n}", String(queued)) +
+                (nextAt
+                  ? " " +
+                    t("push.queuedNext").replace(
+                      "{time}",
+                      new Date(nextAt).toLocaleTimeString(undefined, {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: settings.display.hour12,
+                      }),
+                    )
+                  : "")
               : t("push.queuedNone")}
         </p>
       ) : null}

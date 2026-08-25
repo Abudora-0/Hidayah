@@ -357,3 +357,30 @@ export async function sendTestPush() {
     throw await serverError(response, "deliveryFailed", "The test notification could not be sent.");
   }
 }
+
+export type PushQueue = {
+  queued: number;
+  nextPrayer: string | null;
+  nextAt: string | null;
+  scheduling: boolean;
+};
+
+/**
+ * What is currently waiting to be delivered to this device.
+ *
+ * Returns null when there is nothing to report, which includes not being
+ * subscribed, so the caller can simply show nothing.
+ */
+export async function fetchPushQueue(): Promise<PushQueue | null> {
+  const subscription = await currentSubscription();
+  if (!subscription) return null;
+
+  const response = await fetch("/api/push/status", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ endpoint: subscription.endpoint }),
+  }).catch(() => null);
+
+  if (!response || !response.ok) return null;
+  return (await response.json().catch(() => null)) as PushQueue | null;
+}
