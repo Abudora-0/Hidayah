@@ -115,6 +115,17 @@ function scheduleKey(
  * so treating one as done reports prayers as waiting that nothing will ever
  * deliver, which is worse than reporting none at all.
  */
+export async function scheduleReference(
+  subscriptionId: string,
+  localDate: string,
+  prayer: PrayerKey,
+) {
+  const store = redis();
+  const value = await store.get(scheduleKey(subscriptionId, localDate, prayer));
+  if (value === null || value === PENDING || value === 1) return null;
+  return String(value);
+}
+
 export async function isScheduleClaimed(
   subscriptionId: string,
   localDate: string,

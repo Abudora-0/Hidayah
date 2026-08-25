@@ -7,6 +7,7 @@ import {
   confirmSchedule,
   isScheduleClaimed,
   releaseSchedule,
+  scheduleReference,
   type PushSubscriptionRecord,
 } from "./push-store";
 
@@ -180,7 +181,13 @@ export async function scheduleUpcoming(
 export async function describeQueue(
   record: PushSubscriptionRecord,
   now = new Date(),
-): Promise<{ queued: number; nextPrayer: string | null; nextAt: string | null }> {
+): Promise<{
+  queued: number;
+  nextPrayer: string | null;
+  nextAt: string | null;
+  /** The QStash id for the next one, so it can be found in their console. */
+  nextReference: string | null;
+}> {
   const horizon = new Date(now.getTime() + WINDOW_HOURS * 3600 * 1000);
 
   const today = localDateInZone(record.timeZone, now);
@@ -189,7 +196,7 @@ export async function describeQueue(
     new Date(now.getTime() + 24 * 3600 * 1000),
   );
 
-  const waiting: { prayer: string; at: Date }[] = [];
+  const waiting: { prayer: string; at: Date; day: string }[] = [];
 
   for (const day of [today, tomorrow]) {
     const times = getDayTimes(
@@ -206,7 +213,7 @@ export async function describeQueue(
       if (!(await isScheduleClaimed(record.id, formatLocalDay(day), prayer))) {
         continue;
       }
-      waiting.push({ prayer, at });
+      waiting.push({ prayer, at, day: formatLocalDay(day) });
     }
   }
 
@@ -217,5 +224,8 @@ export async function describeQueue(
     queued: waiting.length,
     nextPrayer: next ? next.prayer : null,
     nextAt: next ? next.at.toISOString() : null,
+    nextReference: next
+      ? await scheduleReference(record.id, next.day, next.prayer as PrayerKey)
+      : null,
   };
 }
