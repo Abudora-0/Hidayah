@@ -41,6 +41,15 @@ export async function currentSubscription() {
 
 export class PushError extends Error {}
 
+/** Whatever the platform threw, in a form worth showing someone. */
+function describe(caught: unknown) {
+  if (caught instanceof DOMException) {
+    return `${caught.name}: ${caught.message}`;
+  }
+  if (caught instanceof Error) return caught.message;
+  return String(caught);
+}
+
 type EnableArgs = {
   location: StoredLocation;
   method: MethodKey;
@@ -79,20 +88,43 @@ export async function enablePush({
     );
   }
 
-  const registration = await registerServiceWorker();
+  let registration: ServiceWorkerRegistration | null | undefined;
+  try {
+    registration = await registerServiceWorker();
+  } catch (caught) {
+    throw new PushError(
+      `The service worker could not be registered. ${describe(caught)}`,
+    );
+  }
   if (!registration) {
     throw new PushError("The service worker could not be registered.");
   }
 
   await navigator.serviceWorker.ready;
 
+  let applicationServerKey: ReturnType<typeof urlBase64ToUint8Array>;
+  try {
+    applicationServerKey = urlBase64ToUint8Array(key);
+  } catch {
+    throw new PushError(
+      "The configured VAPID public key is not valid base64url, so this build cannot subscribe.",
+    );
+  }
+
   const existing = await registration.pushManager.getSubscription();
-  const subscription =
-    existing ??
-    (await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(key),
-    }));
+  let subscription: PushSubscription;
+  try {
+    subscription =
+      existing ??
+      (await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey,
+      }));
+  } catch (caught) {
+    // The browser refuses for reasons it will only state in the exception,
+    // and hiding that behind a generic sentence leaves nothing to act on.
+    throw new PushError(`The browser refused the subscription. ${describe(caught)}`);
+  }
 
   const response = await fetch("/api/push/subscribe", {
     method: "POST",
@@ -129,4 +161,29 @@ export async function disablePush() {
   });
 
   await subscription.unsubscribe();
+}
+
+/**
+ * Asks the server to deliver a single notification to this device.
+ *
+ * Whether a push actually arrives depends on the browser, the operating
+ * system and the push service, none of which the page can inspect, so the
+ * only honest test is to send one and look.
+ */
+export async function sendTestPush() {
+  const subscription = await currentSubscription();
+  if (!subscription) {
+    throw new PushError("This device is not subscribed yet.");
+  }
+
+  const response = await fetch("/api/push/test", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ endpoint: subscription.endpoint }),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new PushError(body.error || "The test notification could not be sent.");
+  }
 }

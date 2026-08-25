@@ -33,8 +33,13 @@ self.addEventListener("push", (event) => {
 
       // A tab that is open can play the adhan. The notification is shown
       // either way, so the alarm still lands if nothing is open.
-      for (const client of clients) {
-        client.postMessage({ type: "hidayah-prayer", prayer: payload.prayer });
+      //
+      // A test push is checking that delivery works, not announcing a prayer,
+      // so it shows the notification without calling anyone to prayer.
+      if (!payload.test) {
+        for (const client of clients) {
+          client.postMessage({ type: "hidayah-prayer", prayer: payload.prayer });
+        }
       }
 
       await self.registration.showNotification(title, {

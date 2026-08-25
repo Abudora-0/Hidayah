@@ -11,6 +11,7 @@ import {
   enablePush,
   pushPublicKey,
   pushSupported,
+  sendTestPush,
 } from "@/lib/push-client";
 import type { StoredLocation } from "@/lib/location";
 import { useMounted } from "@/lib/hooks";
@@ -22,10 +23,12 @@ type PushControlProps = {
 };
 
 type Status = "unknown" | "off" | "on" | "working";
+type TestState = "idle" | "sending" | "sent";
 
 export function PushControl({ location, settings }: PushControlProps) {
   const [status, setStatus] = useState<Status>("unknown");
   const [error, setError] = useState<string | null>(null);
+  const [testState, setTestState] = useState<TestState>("idle");
 
   // Support cannot be tested on the server, and rendering the unsupported
   // branch there and the supported one after hydration is a mismatch. So the
@@ -94,6 +97,22 @@ export function PushControl({ location, settings }: PushControlProps) {
     [location, enabledPrayers, settings.prayer.method, settings.prayer.madhab],
   );
 
+  const test = useCallback(async () => {
+    setError(null);
+    setTestState("sending");
+    try {
+      await sendTestPush();
+      setTestState("sent");
+    } catch (caught) {
+      setTestState("idle");
+      setError(
+        caught instanceof PushError
+          ? caught.message
+          : "The test notification could not be sent.",
+      );
+    }
+  }, []);
+
   if (!mounted) {
     return (
       <div
@@ -149,6 +168,25 @@ export function PushControl({ location, settings }: PushControlProps) {
           and are deleted when you turn it off.
         </p>
       )}
+
+      {status === "on" ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void test()}
+            disabled={testState === "sending"}
+            className="rounded-full border border-line px-4 py-2 text-xs text-ink-dim transition-colors duration-300 hover:border-gold hover:text-gold-ink disabled:opacity-45"
+          >
+            {testState === "sending" ? "Sending" : "Send a test notification"}
+          </button>
+          {testState === "sent" ? (
+            <span className="text-xs text-ink-faint">
+              Sent. It should arrive within a few seconds, even with this tab
+              closed.
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {error ? (
         <p className="mt-4 rounded-[10px] border border-line px-3.5 py-3 text-xs leading-relaxed text-ink-dim">

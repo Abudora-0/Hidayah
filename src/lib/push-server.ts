@@ -69,6 +69,47 @@ export async function sendPrayerNotification(
 }
 
 /**
+ * Delivers one notification on demand, so a subscriber can confirm that
+ * delivery reaches their device without waiting for the next prayer.
+ *
+ * Unlike the scheduled send this reports the reason a delivery failed, since
+ * whoever pressed the button is standing there waiting to find out.
+ */
+export async function sendTestNotification(
+  record: PushSubscriptionRecord,
+): Promise<{ result: SendResult; detail?: string }> {
+  ensureVapid();
+
+  try {
+    await webpush.sendNotification(
+      { endpoint: record.endpoint, keys: record.keys },
+      JSON.stringify({
+        title: "Hidayah",
+        body: "Notifications are working. This is a test.",
+        test: true,
+      }),
+      { TTL: 60, urgency: "high" },
+    );
+    return { result: "sent" };
+  } catch (error) {
+    const status = (error as { statusCode?: number }).statusCode;
+    const body = (error as { body?: string }).body;
+    if (status === 404 || status === 410) {
+      return {
+        result: "gone",
+        detail: "The browser has discarded this subscription.",
+      };
+    }
+    return {
+      result: "failed",
+      detail: [status ? `push service returned ${status}` : null, body]
+        .filter(Boolean)
+        .join(": ") || (error as Error).message,
+    };
+  }
+}
+
+/**
  * The calendar date in a given time zone at a given instant.
  *
  * The server runs in UTC while the user is somewhere else, so their current
